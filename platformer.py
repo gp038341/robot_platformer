@@ -28,6 +28,10 @@ LIGHT_BLUE = (48, 227, 255)
 game_folder = os.path.dirname(__file__)
 img_folder = os.path.join(game_folder, "img")
 
+#BACKGROUND
+#start_background = pygame.image.load(os.path.join(img_folder, "platform_background.png")).convert()
+#start_background_rect = (WIDTH / 2, HEIGHT / 2)
+
 #DRAW TEXT
 font_name = pygame.font.match_font("georgia")
 def draw_text(screen, text, size, x, y):
@@ -37,8 +41,24 @@ def draw_text(screen, text, size, x, y):
     text_rect.topleft = (x, y)
     screen.blit(text_surface, text_rect)
 
-#BACKGROUND
-#background = pygame.image.load(os.path.join(img_folder, "space.png")).convert()
+
+#SHOW START SCREEN FUNCTION
+def show_start_screen():
+    screen.fill(BLACK)
+    draw_text(screen, "Robot", 64, WIDTH / 2 - 200, HEIGHT / 4)
+    draw_text(screen, "Arrow keys to move, space to shoot", 22, WIDTH / 2 - 200, HEIGHT / 2)
+    draw_text(screen, "Press a key to begin...", 18, WIDTH / 2 - 200, HEIGHT * 3 / 4)
+    pygame.display.flip()
+    waiting = True
+    while waiting:
+        clock.tick(FPS)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+            if event.type == pygame.KEYUP:
+                print("Key pressed to start the game!")
+                waiting = False
+    
 
 
 class Player(pygame.sprite.Sprite):
@@ -67,15 +87,16 @@ class Player(pygame.sprite.Sprite):
 
 
 
-        self.pos = vec(10, GROUND - 60)
+        self.pos = vec(750, GROUND - 60) #10?
         self.vel = vec(0, 0)
         self.acc = vec(0, 0)
         self.rect.centerx = WIDTH / 2
         self.rect.bottom = HEIGHT - 10
         self.speedx = 0
-        self.shoot_delay = 500
+        self.shoot_delay = 1000
         self.last_shot = pygame.time.get_ticks()
 
+    
     def shootright(self):
         now = pygame.time.get_ticks()
         if now - self.last_shot > self.shoot_delay:
@@ -220,12 +241,12 @@ class Player(pygame.sprite.Sprite):
         hits = pygame.sprite.spritecollide(self, platforms, False)
         if hits:
             if self.rect.top > hits[0].rect.top: #jumping from underneath
-                self.pos.y = hits[0].rect.bottom + 25 + 1
+                self.pos.y = GROUND
                 self.vel.y = 0
             else:
                 self.pos.y = hits[0].rect.top + 1 #jumping from above
                 self.vel.y = 0
-
+        
 
 class Mob(pygame.sprite.Sprite):
     def __init__(self):
@@ -237,11 +258,10 @@ class Mob(pygame.sprite.Sprite):
         self.running_count = 0
         
         self.image = self.running[self.running_count]
-        #self.image = pygame.transform.scale(self.image, (10, 10))
 
         self.rect = self.image.get_rect()
         self.rect.center = (WIDTH / 2, HEIGHT / 2)
-        self.rect.x = 1000
+        self.rect.x = 1500
         self.rect.y = 895
 
 
@@ -260,7 +280,74 @@ class Mob(pygame.sprite.Sprite):
 
         if self.rect.right < 0:
             self.rect.left = WIDTH
+
+            
+
+class Yellow2(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.running = [pygame.image.load(os.path.join(img_folder, "alienYellow_walk1.png")).convert(),
+                        pygame.image.load(os.path.join(img_folder, "alienYellow_walk2.png")).convert()
+                        ]
+                              
+        self.running_count = 0
+       
+        self.image = self.running[self.running_count]
+        self.image.set_colorkey(BLACK)
+        self.rect = self.image.get_rect()
+        self.rect.center = (WIDTH / 2, HEIGHT / 2)
+        self.rect.x = 1500
+        self.rect.y = 895
+
+
         
+    def update(self):
+        
+        self.image = self.running[self.running_count]
+        self.image.set_colorkey(BLACK)
+        self.image = pygame.transform.scale(self.image, (60, 80))
+
+        self.running_count += 1
+        if self.running_count > 1:
+            self.running_count = 0 
+
+        self.rect.x += -7
+
+        if self.rect.right < 0:
+            self.rect.left = WIDTH
+
+class Pink3(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.running = [pygame.image.load(os.path.join(img_folder, "alienPink_walk1.png")).convert(),
+                        pygame.image.load(os.path.join(img_folder, "alienPink_walk2.png")).convert()
+                        ]
+                              
+        self.running_count = 0
+        self.image = self.running[self.running_count]
+        self.image.set_colorkey(BLACK)
+        self.image.set_colorkey(BLACK)
+        self.rect = self.image.get_rect()
+        self.rect.center = (WIDTH / 2, HEIGHT / 2)
+        self.rect.x = -80
+        self.rect.y = 895
+
+
+        
+    def update(self):
+        
+        self.image = self.running[self.running_count]
+        self.image.set_colorkey(BLACK)
+        self.image = pygame.transform.scale(self.image, (60, 80))
+
+        self.running_count += 1
+        if self.running_count > 1:
+            self.running_count = 0 
+
+        self.rect.x += 3
+
+        if self.rect.left > WIDTH:
+            self.rect.left = 0
 
 
 class Platform(pygame.sprite.Sprite):
@@ -280,6 +367,24 @@ class Platform(pygame.sprite.Sprite):
 
         if self.rect.right < 0:
             self.rect.left = WIDTH
+
+class Powerup(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load(os.path.join(img_folder, "bolt-icon-button-blue.png")).convert()
+        self.image = pygame.transform.scale(self.image, (50, 50))
+        self.image.set_colorkey(BLACK)
+        self.rect = self.image.get_rect()
+        self.rect.center = (WIDTH / 2, HEIGHT / 2)
+        self.rect.x = random.randint(100, 800)
+        self.rect.y = random.randint(300, 1000)
+
+    def update(self):
+
+        self.rect.x += 3
+
+        if self.rect.left > WIDTH:
+            self.kill()
 
 class Enemyship(pygame.sprite.Sprite):
     def __init__(self):
@@ -343,6 +448,7 @@ pygame.display.set_caption("My Game")
 
 #BACKGROUND MUSIC
 mixer.music.load("Spacecrusher.ogg")
+
 mixer.music.play()
 
 clock = pygame.time.Clock()
@@ -355,25 +461,57 @@ background_rect = background.get_rect()
 #SPRITE GROUPS
 
 player = Player()
+powerup = Powerup()
+powerups = pygame.sprite.Group()
+powerups.add(powerup)
 platform = Platform()
 platforms = pygame.sprite.Group()
 platforms.add(platform)
 mob = Mob()
+alien_yellow = Yellow2()
+aliens_yellow = pygame.sprite.Group()
+aliens_yellow.add(alien_yellow)
+alien_pink = Pink3()
+aliens_pink = pygame.sprite.Group()
+aliens_pink.add(alien_pink)
+enemyship = Enemyship()
 mobs = pygame.sprite.Group()
-mobs.add(mob)
+mobs.add(mob, enemyship)
 bullets = pygame.sprite.Group()
-enemy_ship = Enemyship()
 all_sprites = pygame.sprite.Group()
-all_sprites.add(player, platform, mob, enemy_ship)
+all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup)
 
+def newMob():
+    mob = Mob()
+    all_sprites.add(mob)
+    mobs.add(mob)
 
+def newYellow():
+    alien_yellow = Yellow2()
+    all_sprites.add(alien_yellow)
+    aliens_yellow.add(alien_yellow)
+
+def newPink():
+    alien_pink = Pink3()
+    all_sprites.add(alien_pink)
+    aliens_pink.add(alien_pink)
 
 # GAME LOOP:
 #   Process Events
 #   Update
 #   Draw
+
+score = 0
+start = True
 running = True
 while running:
+
+    #SHOW START SCREEN ONCE
+    if start:
+        mixer.music.stop()
+        show_start_screen()
+        start = False
+        mixer.music.play()
 
     
 
@@ -388,16 +526,65 @@ while running:
     all_sprites.update()
 
     #CHECKS TO SEE IF LASER HITS MOB
+    #BLUE ALIEN COLLISION
     hits = pygame.sprite.groupcollide(mobs, bullets, True, True)
     for hit in hits:
         explosion_sound = mixer.Sound("explosion.wav")
         explosion_sound.play()
+        score += 10
+        newMob()
+
+    hit_mob = pygame.sprite.spritecollide(player, mobs, False)
+    if hit_mob:
+        explosion_sound = mixer.Sound("explosion.wav")
+        explosion_sound.play()
+        player.kill()
+        running = False
+
+    #YELLOW ALIEN COLLISION
+    hit_yellow = pygame.sprite.spritecollide(player, aliens_yellow, False)
+    if hit_yellow:
+        explosion_sound = mixer.Sound("explosion.wav")
+        explosion_sound.play()
+        player.kill()
+        running = False
+
+    hits_yellow = pygame.sprite.groupcollide(aliens_yellow, bullets, True, True)
+    for hit in hits_yellow:
+        explosion_sound = mixer.Sound("explosion.wav")
+        explosion_sound.play()
+        score += 20
+        newYellow()
+        
+    #PINK ALIEN COLLISION
+    hit_pink = pygame.sprite.spritecollide(player, aliens_pink, False)
+    if hit_pink:
+        explosion_sound = mixer.Sound("explosion.wav")
+        explosion_sound.play()
+        player.kill()
+        running = False
+
+    hits_pink = pygame.sprite.groupcollide(aliens_pink, bullets, True, True)
+    for hit in hits_pink:
+        explosion_sound = mixer.Sound("explosion.wav")
+        explosion_sound.play()
+        score += 15
+        newPink()
+
+    hit_powerup = pygame.sprite.spritecollide(player, powerups, False)
+    if hit_powerup:
+        #powerup_sound = mixer.Sound("Picked_Coin_Echo.wav")
+        #powerup_sound.play()
+        powerup.kill()
+        player.shoot_delay = 000 # WORK ON THIS SHOOT DELAY = 0
+       
 
     # DRAW
     screen.blit(background, background_rect)
     all_sprites.draw(screen)
     draw_text(screen, "PLATFORMER", 24, 10, 10)
     draw_text(screen, "Arrow keys to move. Space to shoot", 20, 10, 35)
+    draw_text(screen, str(score), 35, 1400, 5)
 
     #FLIP AFTER DRAWING
     pygame.display.flip()
