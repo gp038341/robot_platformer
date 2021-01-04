@@ -585,6 +585,7 @@ while running:
     draw_text(screen, "PLATFORMER", 24, 10, 10)
     draw_text(screen, "Arrow keys to move. Space to shoot", 20, 10, 35)
     draw_text(screen, str(score), 35, 1400, 5)
+    draw_text(screen, "SCORE: ", 35, 1200, 5)
 
     #FLIP AFTER DRAWING
     pygame.display.flip()
