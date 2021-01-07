@@ -48,7 +48,7 @@ def draw_text(screen, text, size, x, y):
 #SHOW START SCREEN FUNCTION
 def show_start_screen():
     screen.fill(BLACK)
-    draw_text(screen, "Robot", 64, WIDTH / 2 - 200, HEIGHT / 4)
+    draw_text(screen, "ROBOTS VS ALIENS", 64, WIDTH / 2 - 200, HEIGHT / 4)
     draw_text(screen, "Arrow keys to move, space to shoot", 22, WIDTH / 2 - 200, HEIGHT / 2)
     draw_text(screen, "Press a key to begin...", 18, WIDTH / 2 - 200, HEIGHT * 3 / 4)
     pygame.display.flip()
@@ -72,7 +72,7 @@ def show_end_screen():
     pygame.display.flip()
     waiting = True
     while waiting:
-        time.sleep(.95)
+        time.sleep(1.55)
         clock.tick(FPS)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -80,6 +80,7 @@ def show_end_screen():
             if event.type == pygame.KEYUP:
                 print("Key pressed to start the game!")
                 waiting = False
+                mixer.music.play()
     
 
 
@@ -128,6 +129,7 @@ class Player(pygame.sprite.Sprite):
             bullet_sound = mixer.Sound("laser5.wav")
             bullet_sound.play()
             bullets.add(bullet)
+            self.mask = pygame.mask.from_surface(self.image)
 
     def shootleft(self):
         now = pygame.time.get_ticks()
@@ -138,6 +140,7 @@ class Player(pygame.sprite.Sprite):
             bullet_sound = mixer.Sound("laser5.wav")
             bullet_sound.play()
             bullets.add(bullet)
+            self.mask = pygame.mask.from_surface(self.image)
 
         
     def update(self):
@@ -270,20 +273,20 @@ class Player(pygame.sprite.Sprite):
                 self.vel.y = 0
 
         #HITS ROCKET
-        hits = pygame.sprite.spritecollide(self, obstacles, False)
-        if hits:
-            if self.rect.right > hits[0].rect.left: #jumping from left
+        hits_rocket = pygame.sprite.spritecollide(self, obstacles, False, pygame.sprite.collide_mask)
+        if hits_rocket:
+            if self.pos.x == rocket.rect.left: #jumping from left
                 self.rect.right = rocket.rect.left + 10
                 self.vel.y = 0
                 
-            elif self.rect.left > hits[0].rect.right: #hitting from right
+            elif self.pos.x == rocket.rect.right: #hitting from right
                 self.rect.left = rocket.rect.right + 10
                 self.vel.y = 0
-            else:
-                self.pos.y = hits[0].rect.top + 1 #jumping from above
-                self.pos.y = rocket.rect.top
+            #else:
+             #   self.pos.y = hits[0].rect.top + 1 #jumping from above
+              #  self.pos.y = rocket.rect.top
         
-
+        self.mask = pygame.mask.from_surface(self.image)
 class Mob(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
@@ -316,6 +319,8 @@ class Mob(pygame.sprite.Sprite):
 
         if self.rect.right < 0:
             self.rect.left = WIDTH
+
+        self.mask = pygame.mask.from_surface(self.image)
 
             
 
@@ -352,6 +357,8 @@ class Yellow2(pygame.sprite.Sprite):
         if self.rect.right < 0:
             self.rect.left = WIDTH
 
+        self.mask = pygame.mask.from_surface(self.image)
+
 class Pink3(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
@@ -384,6 +391,8 @@ class Pink3(pygame.sprite.Sprite):
 
         if self.rect.left > WIDTH:
             self.rect.left = 0
+            
+        self.mask = pygame.mask.from_surface(self.image)
 
 
 class Platform(pygame.sprite.Sprite):
@@ -404,6 +413,8 @@ class Platform(pygame.sprite.Sprite):
         if self.rect.right < 0:
             self.rect.left = WIDTH
 
+        self.mask = pygame.mask.from_surface(self.image)
+
 class Rocket(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
@@ -414,7 +425,7 @@ class Rocket(pygame.sprite.Sprite):
         self.rect.center = (WIDTH / 2, HEIGHT / 2)
         self.rect.x = 800
         self.rect.y = 835
-
+        self.mask = pygame.mask.from_surface(self.image)
 
 
 
@@ -436,7 +447,7 @@ class Powerup(pygame.sprite.Sprite):
 
         if self.rect.left > WIDTH:
             self.kill()
-            
+        self.mask = pygame.mask.from_surface(self.image)            
 
 class Enemyship(pygame.sprite.Sprite):
     def __init__(self):
@@ -456,7 +467,7 @@ class Enemyship(pygame.sprite.Sprite):
         if self.rect.right < 0:
             self.rect.left = WIDTH
 
-
+        self.mask = pygame.mask.from_surface(self.image)
 class Bulletright(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
@@ -468,11 +479,14 @@ class Bulletright(pygame.sprite.Sprite):
         self.rect.centerx = x
         self.speedx = 20
 
+        self.mask = pygame.mask.from_surface(self.image)
+
     def update(self):
         self.rect.x += self.speedx
         if self.rect.left > WIDTH:
             self.kill()
-
+        self.mask = pygame.mask.from_surface(self.image)
+        
 class Bulletleft(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
@@ -483,11 +497,13 @@ class Bulletleft(pygame.sprite.Sprite):
         self.rect.centerx = x
         self.speedx = -20
 
+        self.mask = pygame.mask.from_surface(self.image)
+
     def update(self):
         self.rect.x += self.speedx
         if self.rect.right < 0:
             self.kill()
-
+        self.mask = pygame.mask.from_surface(self.image)
 
     
 #INITIALIZE VARIABLES
@@ -583,17 +599,19 @@ while running:
 
     #CHECKS TO SEE IF LASER HITS MOB
     #BLUE ALIEN COLLISION
-    hits = pygame.sprite.groupcollide(mobs, bullets, True, True)
+    hits = pygame.sprite.groupcollide(mobs, bullets, True, True, pygame.sprite.collide_mask)
     for hit in hits:
         explosion_sound = mixer.Sound("explosion.wav")
         explosion_sound.play()
         score += 10
         newMob()
 
+    hit_obstacles = pygame.sprite.groupcollide(obstacles, bullets, False, True, pygame.sprite.collide_mask)
+    for hit in hits:
+        explosion_sound = mixer.Sound("explosion.wav")
+        explosion_sound.play()
 
-
-
-    hit_mob = pygame.sprite.spritecollide(player, mobs, False)
+    hit_mob = pygame.sprite.spritecollide(player, mobs, False, pygame.sprite.collide_mask)
     if hit_mob:
         explosion_sound = mixer.Sound("explosion.wav")
         explosion_sound.play()
@@ -601,6 +619,7 @@ while running:
         #running = False
         if end:
             start = False
+            mixer.music.stop()
             show_end_screen()
             player = Player()
             powerup = Powerup()
@@ -631,13 +650,14 @@ while running:
 
 
     #YELLOW ALIEN COLLISION
-    hit_yellow = pygame.sprite.spritecollide(player, aliens_yellow, False)
+    hit_yellow = pygame.sprite.spritecollide(player, aliens_yellow, False, pygame.sprite.collide_mask)
     if hit_yellow:
         explosion_sound = mixer.Sound("explosion.wav")
         explosion_sound.play()
         player.kill()
         if end:
             start = False
+            mixer.music.stop()
             show_end_screen()
             player = Player()
             powerup = Powerup()
@@ -668,7 +688,7 @@ while running:
 
 
 
-    hits_yellow = pygame.sprite.groupcollide(aliens_yellow, bullets, True, True)
+    hits_yellow = pygame.sprite.groupcollide(aliens_yellow, bullets, True, True, pygame.sprite.collide_mask)
     for hit in hits_yellow:
         explosion_sound = mixer.Sound("explosion.wav")
         explosion_sound.play()
@@ -680,13 +700,14 @@ while running:
 
         
     #PINK ALIEN COLLISION
-    hit_pink = pygame.sprite.spritecollide(player, aliens_pink, False)
+    hit_pink = pygame.sprite.spritecollide(player, aliens_pink, False, pygame.sprite.collide_mask)
     if hit_pink:
         explosion_sound = mixer.Sound("explosion.wav")
         explosion_sound.play()
         player.kill()
         if end:
             start = False
+            mixer.music.stop()
             show_end_screen()
             player = Player()
             powerup = Powerup()
@@ -717,7 +738,7 @@ while running:
 
 
 
-    hits_pink = pygame.sprite.groupcollide(aliens_pink, bullets, True, True)
+    hits_pink = pygame.sprite.groupcollide(aliens_pink, bullets, True, True, pygame.sprite.collide_mask)
     for hit in hits_pink:
         explosion_sound = mixer.Sound("explosion.wav")
         explosion_sound.play()
@@ -728,7 +749,7 @@ while running:
 
 
 
-    hit_powerup = pygame.sprite.spritecollide(player, powerups, False)
+    hit_powerup = pygame.sprite.spritecollide(player, powerups, False, pygame.sprite.collide_mask)
     if hit_powerup:
         #powerup_sound = mixer.Sound("Picked_Coin_Echo.wav")
         #powerup_sound.play()
@@ -746,7 +767,7 @@ while running:
     
     #screen.blit(background, background_rect)
     all_sprites.draw(screen)
-    draw_text(screen, "PLATFORMER", 24, 10, 10)
+    draw_text(screen, "ROBOTS VS ALIENS", 24, 10, 10)
     draw_text(screen, "Arrow keys to move. Space to shoot", 20, 10, 35)
     draw_text(screen, str(score), 35, 1400, 5)
     draw_text(screen, "SCORE: ", 35, 1200, 5)
