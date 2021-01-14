@@ -10,7 +10,6 @@ FPS = 30
 GROUND = HEIGHT - 30
 SLOW = 3
 FAST = 8
-POWERUP_TIME = 2999
 score = 0
 
 #CONSTANTS - PHYSICS
@@ -31,9 +30,6 @@ LIGHT_BLUE = (48, 227, 255)
 game_folder = os.path.dirname(__file__)
 img_folder = os.path.join(game_folder, "img")
 
-#BACKGROUND
-#start_background = pygame.image.load(os.path.join(img_folder, "platform_background.png")).convert()
-#start_background_rect = (WIDTH / 2, HEIGHT / 2)
 
 #DRAW TEXT
 font_name = pygame.font.match_font("georgia")
@@ -59,7 +55,6 @@ def show_start_screen():
             if event.type == pygame.QUIT:
                 pygame.quit()
             if event.type == pygame.KEYUP:
-                print("Key pressed to start the game!")
                 waiting = False
 
 
@@ -78,10 +73,53 @@ def show_end_screen():
             if event.type == pygame.QUIT:
                 pygame.quit()
             if event.type == pygame.KEYUP:
-                print("Key pressed to start the game!")
                 waiting = False
                 mixer.music.play()
-    
+
+
+class HealthBar(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+
+        self.healthbars = [
+            pygame.image.load(os.path.join(img_folder, "healthbar_0.png")).convert(),
+            pygame.image.load(os.path.join(img_folder, "healthbar_1.png")).convert(),
+            pygame.image.load(os.path.join(img_folder, "healthbar_2.png")).convert(),
+            pygame.image.load(os.path.join(img_folder, "healthbar_3.png")).convert(),
+            pygame.image.load(os.path.join(img_folder, "healthbar_4.png")).convert(),
+            pygame.image.load(os.path.join(img_folder, "healthbar_5.png")).convert()
+            ]
+        self.healthbar_count = 0
+
+        self.image = self.healthbars[self.healthbar_count]
+        self.image = pygame.transform.scale(self.image, (100, 50))
+        self.image.set_colorkey(BLACK)
+
+        #ESTABLISH RECT, STARTING POINT
+        self.rect = self.image.get_rect()
+        self.rect.x = 1200
+        self.rect.y = 5
+
+    def getHealth(self):
+        return self.healthbar_count
+
+    #PASS IN +1 OR -1 TO INCREMENT / DECREMENT HEALTH BAR
+    def setHealth(self, health):
+        
+        if health == 1: #INCREASE HEALTH UNLESS self.healthbar_count is at 0
+            self.healthbar_count -= 1
+            if self.healthbar_count < 0:
+                self.healthbar_count = 0
+
+        elif health == -1: #DECREASE HEALTH, UNLESS self.healthbar_count is at 5
+            self.healthbar_count += 1
+            if self.healthbar_count > 5:
+                self.healthbar_count = 5
+
+    def update(self):
+        self.image = self.healthbars[self.healthbar_count]
+        self.image = pygame.transform.scale(self.image, (300, 100))
+        self.image.set_colorkey(BLACK)
 
 
 class Player(pygame.sprite.Sprite):
@@ -110,7 +148,7 @@ class Player(pygame.sprite.Sprite):
 
 
 
-        self.pos = vec(750, GROUND - 60) #10?
+        self.pos = vec(750, GROUND - 60) 
         self.vel = vec(0, 0)
         self.acc = vec(0, 0)
         self.rect.centerx = WIDTH / 2
@@ -197,7 +235,7 @@ class Player(pygame.sprite.Sprite):
             self.image.set_colorkey(BLACK)
 
                 #Idle
-        if self.vel.y == 0: #and self.acc.x == 0:
+        if self.vel.y == 0: 
             self.image = pygame.image.load(os.path.join(img_folder, "character_robot_idle.png")).convert()
             self.image = pygame.transform.scale(self.image, (75, 100))
             self.image.set_colorkey(BLACK)
@@ -272,21 +310,7 @@ class Player(pygame.sprite.Sprite):
                 self.pos.y = hits[0].rect.top + 1 #jumping from above
                 self.vel.y = 0
 
-        #HITS ROCKET
-        hits_rocket = pygame.sprite.spritecollide(self, obstacles, False, pygame.sprite.collide_mask)
-        if hits_rocket:
-            if self.pos.x == rocket.rect.left: #jumping from left
-                self.rect.right = rocket.rect.left + 10
-                self.vel.y = 0
-                
-            elif self.pos.x == rocket.rect.right: #hitting from right
-                self.rect.left = rocket.rect.right + 10
-                self.vel.y = 0
-            #else:
-             #   self.pos.y = hits[0].rect.top + 1 #jumping from above
-              #  self.pos.y = rocket.rect.top
         
-        self.mask = pygame.mask.from_surface(self.image)
 class Mob(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
@@ -530,27 +554,42 @@ bkgr_x = 0
 
 player = Player()
 powerup = Powerup()
+
 powerups = pygame.sprite.Group()
 powerups.add(powerup)
+
 platform = Platform()
 platforms = pygame.sprite.Group()
 platforms.add(platform)
+
 rocket = Rocket()
 obstacles = pygame.sprite.Group()
 obstacles.add(rocket)
+
 mob = Mob()
+
 alien_yellow = Yellow2()
 aliens_yellow = pygame.sprite.Group()
 aliens_yellow.add(alien_yellow)
+
 alien_pink = Pink3()
 aliens_pink = pygame.sprite.Group()
 aliens_pink.add(alien_pink)
+
 enemyship = Enemyship()
+enemyships = pygame.sprite.Group()
+enemyships.add(enemyship)
+
 mobs = pygame.sprite.Group()
-mobs.add(mob, enemyship)
+mobs.add(mob)
+
 bullets = pygame.sprite.Group()
+
+healthBar = HealthBar()
+#all_sprites.add(healthBar)
+
 all_sprites = pygame.sprite.Group()
-all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket)
+all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar)
 
 def newMob():
     mob = Mob()
@@ -594,9 +633,6 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-    # UPDATE
-    all_sprites.update()
-
     #CHECKS TO SEE IF LASER HITS MOB
     #BLUE ALIEN COLLISION
     hits = pygame.sprite.groupcollide(mobs, bullets, True, True, pygame.sprite.collide_mask)
@@ -606,83 +642,183 @@ while running:
         score += 10
         newMob()
 
+        
+    hits_ship = pygame.sprite.groupcollide(enemyships, bullets, True, True, pygame.sprite.collide_mask)
+    for hit in hits_ship:
+        explosion_sound = mixer.Sound("explosion.wav")
+        explosion_sound.play()
+        score += 30
+        newMob()
+
     hit_obstacles = pygame.sprite.groupcollide(obstacles, bullets, False, True, pygame.sprite.collide_mask)
-    for hit in hits:
+    for hit in hit_obstacles:
         explosion_sound = mixer.Sound("explosion.wav")
         explosion_sound.play()
 
-    hit_mob = pygame.sprite.spritecollide(player, mobs, False, pygame.sprite.collide_mask)
+    hit_mob = pygame.sprite.spritecollide(player, mobs, True, pygame.sprite.collide_mask)
     if hit_mob:
+        mob.kill()
+        newMob()
         explosion_sound = mixer.Sound("explosion.wav")
         explosion_sound.play()
-        player.kill()
-        #running = False
-        if end:
-            start = False
-            mixer.music.stop()
-            show_end_screen()
-            player = Player()
-            powerup = Powerup()
-            powerups = pygame.sprite.Group()
-            powerups.add(powerup)
-            platform = Platform()
-            platforms = pygame.sprite.Group()
-            platforms.add(platform)
-            rocket = Rocket()
-            obstacles = pygame.sprite.Group()
-            obstacles.add(rocket)
-            mob = Mob()
-            alien_yellow = Yellow2()
-            aliens_yellow = pygame.sprite.Group()
-            aliens_yellow.add(alien_yellow)
-            alien_pink = Pink3()
-            aliens_pink = pygame.sprite.Group()
-            aliens_pink.add(alien_pink)
-            enemyship = Enemyship()
-            mobs = pygame.sprite.Group()
-            mobs.add(mob, enemyship)
-            bullets = pygame.sprite.Group()
-            all_sprites = pygame.sprite.Group()
-            all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket)
-            score = 0
+        healthBar.setHealth(-1)
+        if healthBar.healthbar_count == 5: 
+            player.kill()
+            if end:
+                start = False
+                mixer.music.stop()
+                show_end_screen()
+                player = Player()
+                powerup = Powerup()
+
+                powerups = pygame.sprite.Group()
+                powerups.add(powerup)
+
+                platform = Platform()
+                platforms = pygame.sprite.Group()
+                platforms.add(platform)
+
+                rocket = Rocket()
+                obstacles = pygame.sprite.Group()
+                obstacles.add(rocket)
+
+                mob = Mob()
+
+                alien_yellow = Yellow2()
+                aliens_yellow = pygame.sprite.Group()
+                aliens_yellow.add(alien_yellow)
+
+                alien_pink = Pink3()
+                aliens_pink = pygame.sprite.Group()
+                aliens_pink.add(alien_pink)
+
+                enemyship = Enemyship()
+                enemyships = pygame.sprite.Group()
+                enemyships.add(enemyship)
+
+                mobs = pygame.sprite.Group()
+                mobs.add(mob)
+
+                bullets = pygame.sprite.Group()
+
+                healthBar = HealthBar()
+                #all_sprites.add(healthBar)
+
+                all_sprites = pygame.sprite.Group()
+                all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar)
+                score = 0
+
+
+    #HITS ENEMY SHIP
+    hit_ship = pygame.sprite.spritecollide(player, enemyships, True, pygame.sprite.collide_mask)
+    if hit_ship:
+        enemyship.kill()
+        newMob()
+        explosion_sound = mixer.Sound("explosion.wav")
+        explosion_sound.play()
+        healthBar.setHealth(-1)
+        if healthBar.healthbar_count == 5: 
+            player.kill()
+            if end:
+                start = False
+                mixer.music.stop()
+                show_end_screen()
+                player = Player()
+                powerup = Powerup()
+
+                powerups = pygame.sprite.Group()
+                powerups.add(powerup)
+
+                platform = Platform()
+                platforms = pygame.sprite.Group()
+                platforms.add(platform)
+
+                rocket = Rocket()
+                obstacles = pygame.sprite.Group()
+                obstacles.add(rocket)
+
+                mob = Mob()
+
+                alien_yellow = Yellow2()
+                aliens_yellow = pygame.sprite.Group()
+                aliens_yellow.add(alien_yellow)
+
+                alien_pink = Pink3()
+                aliens_pink = pygame.sprite.Group()
+                aliens_pink.add(alien_pink)
+
+                enemyship = Enemyship()
+                enemyships = pygame.sprite.Group()
+                enemyships.add(enemyship)
+
+                mobs = pygame.sprite.Group()
+                mobs.add(mob)
+
+                bullets = pygame.sprite.Group()
+
+                healthBar = HealthBar()
+                #all_sprites.add(healthBar)
+
+                all_sprites = pygame.sprite.Group()
+                all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar)
+                score = 0
 
 
 
 
     #YELLOW ALIEN COLLISION
-    hit_yellow = pygame.sprite.spritecollide(player, aliens_yellow, False, pygame.sprite.collide_mask)
+    hit_yellow = pygame.sprite.spritecollide(player, aliens_yellow, True, pygame.sprite.collide_mask)
     if hit_yellow:
         explosion_sound = mixer.Sound("explosion.wav")
         explosion_sound.play()
-        player.kill()
-        if end:
-            start = False
-            mixer.music.stop()
-            show_end_screen()
-            player = Player()
-            powerup = Powerup()
-            powerups = pygame.sprite.Group()
-            powerups.add(powerup)
-            platform = Platform()
-            platforms = pygame.sprite.Group()
-            platforms.add(platform)
-            rocket = Rocket()
-            obstacles = pygame.sprite.Group()
-            obstacles.add(rocket)
-            mob = Mob()
-            alien_yellow = Yellow2()
-            aliens_yellow = pygame.sprite.Group()
-            aliens_yellow.add(alien_yellow)
-            alien_pink = Pink3()
-            aliens_pink = pygame.sprite.Group()
-            aliens_pink.add(alien_pink)
-            enemyship = Enemyship()
-            mobs = pygame.sprite.Group()
-            mobs.add(mob, enemyship)
-            bullets = pygame.sprite.Group()
-            all_sprites = pygame.sprite.Group()
-            all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket)
-            score = 0
+        alien_yellow.kill()
+        newYellow()
+        healthBar.setHealth(-1)
+        if healthBar.healthbar_count == 5: 
+            player.kill()
+            if end:
+                start = False
+                mixer.music.stop()
+                show_end_screen()
+                player = Player()
+                powerup = Powerup()
+
+                powerups = pygame.sprite.Group()
+                powerups.add(powerup)
+
+                platform = Platform()
+                platforms = pygame.sprite.Group()
+                platforms.add(platform)
+
+                rocket = Rocket()
+                obstacles = pygame.sprite.Group()
+                obstacles.add(rocket)
+
+                mob = Mob()
+
+                alien_yellow = Yellow2()
+                aliens_yellow = pygame.sprite.Group()
+                aliens_yellow.add(alien_yellow)
+
+                alien_pink = Pink3()
+                aliens_pink = pygame.sprite.Group()
+                aliens_pink.add(alien_pink)
+
+                enemyship = Enemyship()
+                enemyships = pygame.sprite.Group()
+                enemyships.add(enemyship)
+
+                mobs = pygame.sprite.Group()
+                mobs.add(mob)
+
+                bullets = pygame.sprite.Group()
+
+                healthBar = HealthBar()
+                #all_sprites.add(healthBar)
+
+                all_sprites = pygame.sprite.Group()
+                all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar)
+                score = 0
 
 
 
@@ -700,39 +836,58 @@ while running:
 
         
     #PINK ALIEN COLLISION
-    hit_pink = pygame.sprite.spritecollide(player, aliens_pink, False, pygame.sprite.collide_mask)
+    hit_pink = pygame.sprite.spritecollide(player, aliens_pink, True, pygame.sprite.collide_mask)
     if hit_pink:
         explosion_sound = mixer.Sound("explosion.wav")
         explosion_sound.play()
-        player.kill()
-        if end:
-            start = False
-            mixer.music.stop()
-            show_end_screen()
-            player = Player()
-            powerup = Powerup()
-            powerups = pygame.sprite.Group()
-            powerups.add(powerup)
-            platform = Platform()
-            platforms = pygame.sprite.Group()
-            platforms.add(platform)
-            rocket = Rocket()
-            obstacles = pygame.sprite.Group()
-            obstacles.add(rocket)
-            mob = Mob()
-            alien_yellow = Yellow2()
-            aliens_yellow = pygame.sprite.Group()
-            aliens_yellow.add(alien_yellow)
-            alien_pink = Pink3()
-            aliens_pink = pygame.sprite.Group()
-            aliens_pink.add(alien_pink)
-            enemyship = Enemyship()
-            mobs = pygame.sprite.Group()
-            mobs.add(mob, enemyship)
-            bullets = pygame.sprite.Group()
-            all_sprites = pygame.sprite.Group()
-            all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket)
-            score = 0
+        alien_pink.kill()
+        newPink()
+        healthBar.setHealth(-1)
+        if healthBar.healthbar_count == 5: 
+            player.kill()
+            if end:
+                start = False
+                mixer.music.stop()
+                show_end_screen()
+                player = Player()
+                powerup = Powerup()
+
+                powerups = pygame.sprite.Group()
+                powerups.add(powerup)
+
+                platform = Platform()
+                platforms = pygame.sprite.Group()
+                platforms.add(platform)
+
+                rocket = Rocket()
+                obstacles = pygame.sprite.Group()
+                obstacles.add(rocket)
+
+                mob = Mob()
+
+                alien_yellow = Yellow2()
+                aliens_yellow = pygame.sprite.Group()
+                aliens_yellow.add(alien_yellow)
+
+                alien_pink = Pink3()
+                aliens_pink = pygame.sprite.Group()
+                aliens_pink.add(alien_pink)
+
+                enemyship = Enemyship()
+                enemyships = pygame.sprite.Group()
+                enemyships.add(enemyship)
+
+                mobs = pygame.sprite.Group()
+                mobs.add(mob)
+
+                bullets = pygame.sprite.Group()
+
+                healthBar = HealthBar()
+                #all_sprites.add(healthBar)
+
+                all_sprites = pygame.sprite.Group()
+                all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar)
+                score = 0
 
 
 
@@ -745,17 +900,13 @@ while running:
         score += 15
         newPink()
 
-
-
-
-
-    hit_powerup = pygame.sprite.spritecollide(player, powerups, False, pygame.sprite.collide_mask)
+    
+    hit_powerup = pygame.sprite.spritecollide(player, powerups, True, pygame.sprite.collide_mask)
     if hit_powerup:
         #powerup_sound = mixer.Sound("Picked_Coin_Echo.wav")
         #powerup_sound.play()
         powerup.kill()
         player.shoot_delay = 000 # WORK ON THIS SHOOT DELAY = 0        
-
 
     # DRAW
     rel_x = bkgr_x % background.get_rect().width
@@ -764,13 +915,14 @@ while running:
         screen.blit(background, (rel_x, 0))
     bkgr_x -= 1
 
+    # UPDATE
+    all_sprites.update()
     
-    #screen.blit(background, background_rect)
     all_sprites.draw(screen)
     draw_text(screen, "ROBOTS VS ALIENS", 24, 10, 10)
     draw_text(screen, "Arrow keys to move. Space to shoot", 20, 10, 35)
-    draw_text(screen, str(score), 35, 1400, 5)
-    draw_text(screen, "SCORE: ", 35, 1200, 5)
+    draw_text(screen, str(score), 35, 850, 5)
+    draw_text(screen, "SCORE: ", 35, 650, 5)
 
     #FLIP AFTER DRAWING
     pygame.display.flip()
