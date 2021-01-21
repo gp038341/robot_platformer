@@ -138,13 +138,13 @@ class Enemy_HealthBar(pygame.sprite.Sprite):
         self.healthbar_count = 0
 
         self.image = self.healthbars[self.healthbar_count]
-        self.image = pygame.transform.scale(self.image, (100, 50))
+        self.image = pygame.transform.scale(self.image, (1, 1))
         self.image.set_colorkey(BLACK)
 
         #ESTABLISH RECT, STARTING POINT
         self.rect = self.image.get_rect()
-        self.rect.x = 800
-        self.rect.y = 5
+        self.rect.x = 1200
+        self.rect.y = 50
 
     def getHealth(self):
         return self.healthbar_count
@@ -161,6 +161,15 @@ class Enemy_HealthBar(pygame.sprite.Sprite):
             self.healthbar_count += 1
             if self.healthbar_count > 5:
                 self.healthbar_count = 5
+
+    def update(self):
+
+        if score >= 500:
+            self.image = self.healthbars[self.healthbar_count]
+            self.image = pygame.transform.scale(self.image, (300, 100))
+            self.image.set_colorkey(BLACK)
+            draw_text(screen, "BOSS HEALTH: ", 15, 1200, 60)
+
 
                 
 
@@ -367,7 +376,7 @@ class Boss(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.center = (WIDTH / 2, HEIGHT / 2)
         self.rect.x = 1500
-        self.rect.y = 820
+        self.rect.y = 695
 
 
         
@@ -377,7 +386,7 @@ class Boss(pygame.sprite.Sprite):
             
             self.image = self.running[self.running_count]
             self.image.set_colorkey(BLACK)
-            self.image = pygame.transform.scale(self.image, (100, 150))
+            self.image = pygame.transform.scale(self.image, (175, 275))
 
             self.running_count += 1
             if self.running_count > 1:
@@ -389,6 +398,7 @@ class Boss(pygame.sprite.Sprite):
                 self.rect.left = WIDTH
 
             self.mask = pygame.mask.from_surface(self.image)
+            
         
 
         
@@ -543,7 +553,7 @@ class Powerup(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.center = (WIDTH / 2, HEIGHT / 2)
         self.rect.x = random.randint(100, 400)
-        self.rect.y = random.randint(300, 1000)
+        self.rect.y = random.randint(500, 900)
 
 
     def update(self):
@@ -691,6 +701,11 @@ def newPink():
     alien_pink = Pink3()
     all_sprites.add(alien_pink)
     aliens_pink.add(alien_pink)
+
+def newBoss():
+    boss = Boss()
+    all_sprites.add(boss)
+    bosses.add(boss)
 
 # GAME LOOP:
 #   Process Events
