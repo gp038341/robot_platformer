@@ -234,6 +234,9 @@ class Player(pygame.sprite.Sprite):
 
         
     def update(self):
+
+        if score >= 1000:
+            player.shoot_delay = 1000
         
         self.image.set_colorkey(BLACK)
 
@@ -300,10 +303,11 @@ class Player(pygame.sprite.Sprite):
                 self.image.set_colorkey(BLACK)
                 
                 #Slide
-        if keystate[pygame.K_DOWN] and keystate[pygame.K_RIGHT] and self.vel.y == 0:
-            self.image = pygame.image.load(os.path.join(img_folder, "character_robot_down.png")).convert()
-            self.image = pygame.transform.scale(self.image, (75, 100))
-            self.image.set_colorkey(BLACK)
+        if keystate[pygame.K_DOWN] and keystate[pygame.K_RIGHT]:
+            if self.vel.y == 0:
+                self.image = pygame.image.load(os.path.join(img_folder, "character_robot_down.png")).convert()
+                self.image = pygame.transform.scale(self.image, (75, 100))
+                self.image.set_colorkey(BLACK)
             
                 #Slide Left
         if keystate[pygame.K_DOWN] and keystate[pygame.K_LEFT] and self.vel.y == 0:
@@ -356,7 +360,6 @@ class Player(pygame.sprite.Sprite):
         hits = pygame.sprite.spritecollide(self, platforms, False)
         if hits:
             if self.rect.top > hits[0].rect.top: #jumping from underneath
-                self.pos.y = GROUND
                 self.vel.y = 0
             else:
                 self.pos.y = hits[0].rect.top + 1 #jumping from above
@@ -529,6 +532,27 @@ class Platform(pygame.sprite.Sprite):
             self.rect.left = WIDTH
 
         self.mask = pygame.mask.from_surface(self.image)
+        
+
+class Platform2(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load(os.path.join(img_folder, "shipGreen.png")).convert()
+        self.image = pygame.transform.scale(self.image, (135, 50))
+        self.image.set_colorkey(BLACK)
+        self.rect = self.image.get_rect()
+        self.rect.center = (WIDTH / 2, HEIGHT / 2)
+        self.rect.x = 900
+        self.rect.y = 650
+
+    def update(self):
+
+        self.rect.x += +8
+
+        if self.rect.left > WIDTH:
+            self.rect.right = 0
+
+        self.mask = pygame.mask.from_surface(self.image)
 
 class Rocket(pygame.sprite.Sprite):
     def __init__(self):
@@ -552,17 +576,25 @@ class Powerup(pygame.sprite.Sprite):
         self.image.set_colorkey(BLACK)
         self.rect = self.image.get_rect()
         self.rect.center = (WIDTH / 2, HEIGHT / 2)
-        self.rect.x = random.randint(100, 400)
-        self.rect.y = random.randint(500, 900)
+        
+        
 
 
     def update(self):
 
-        self.rect.x += 3
+            if score >= 200:
 
-        if self.rect.left > WIDTH:
-            self.kill()
-        self.mask = pygame.mask.from_surface(self.image)            
+
+                self.rect.x += 5
+
+                if self.rect.left > WIDTH:
+                    self.kill()
+                self.mask = pygame.mask.from_surface(self.image)
+
+            else:
+                self.rect.x = -100
+                self.rect.y = random.randint(500, 900)
+
 
 class Enemyship(pygame.sprite.Sprite):
     def __init__(self):
@@ -636,7 +668,7 @@ clock = pygame.time.Clock()
 draw_text(screen, str(score), 35, 1400, 5)
 draw_text(screen, "SCORE: ", 35, 1200, 5)
 #ADD BACKGROUND
-bkgr_image = pygame.image.load(os.path.join(img_folder, "space.png")).convert()
+bkgr_image = pygame.image.load(os.path.join(img_folder, "grid_bg.png")).convert()
 background = pygame.transform.scale(bkgr_image, (WIDTH, HEIGHT))
 background_rect = background.get_rect()
 bkgr_x = 0
@@ -649,9 +681,10 @@ powerup = Powerup()
 powerups = pygame.sprite.Group()
 powerups.add(powerup)
 
+platform2 = Platform2()
 platform = Platform()
 platforms = pygame.sprite.Group()
-platforms.add(platform)
+platforms.add(platform, platform2)
 
 rocket = Rocket()
 obstacles = pygame.sprite.Group()
@@ -685,7 +718,7 @@ healthBar = HealthBar()
 enemy_healthBar = Enemy_HealthBar()
 
 all_sprites = pygame.sprite.Group()
-all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar)
+all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2)
 
 def newMob():
     mob = Mob()
@@ -775,9 +808,11 @@ while running:
                 powerups = pygame.sprite.Group()
                 powerups.add(powerup)
 
+                platform2 = Platform2()
                 platform = Platform()
                 platforms = pygame.sprite.Group()
-                platforms.add(platform)
+                platforms.add(platform, platform2)
+
 
                 rocket = Rocket()
                 obstacles = pygame.sprite.Group()
@@ -811,7 +846,7 @@ while running:
                 enemy_healthBar = Enemy_HealthBar()
 
                 all_sprites = pygame.sprite.Group()
-                all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar)
+                all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2)
 
                 score = 0
 
@@ -836,9 +871,11 @@ while running:
                 powerups = pygame.sprite.Group()
                 powerups.add(powerup)
 
+                platform2 = Platform2()
                 platform = Platform()
                 platforms = pygame.sprite.Group()
-                platforms.add(platform)
+                platforms.add(platform, platform2)
+
 
                 rocket = Rocket()
                 obstacles = pygame.sprite.Group()
@@ -872,7 +909,7 @@ while running:
                 enemy_healthBar = Enemy_HealthBar()
 
                 all_sprites = pygame.sprite.Group()
-                all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar)
+                all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2)
 
                 score = 0
 
@@ -899,9 +936,11 @@ while running:
                 powerups = pygame.sprite.Group()
                 powerups.add(powerup)
 
+                platform2 = Platform2()
                 platform = Platform()
                 platforms = pygame.sprite.Group()
-                platforms.add(platform)
+                platforms.add(platform, platform2)
+
 
                 rocket = Rocket()
                 obstacles = pygame.sprite.Group()
@@ -935,7 +974,7 @@ while running:
                 enemy_healthBar = Enemy_HealthBar()
 
                 all_sprites = pygame.sprite.Group()
-                all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar)
+                all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2)
 
                 score = 0
 
@@ -974,9 +1013,11 @@ while running:
                 powerups = pygame.sprite.Group()
                 powerups.add(powerup)
 
+                platform2 = Platform2()
                 platform = Platform()
                 platforms = pygame.sprite.Group()
-                platforms.add(platform)
+                platforms.add(platform, platform2)
+
 
                 rocket = Rocket()
                 obstacles = pygame.sprite.Group()
@@ -1010,7 +1051,7 @@ while running:
                 enemy_healthBar = Enemy_HealthBar()
 
                 all_sprites = pygame.sprite.Group()
-                all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar)
+                all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2)
 
                 score = 0
 
@@ -1030,9 +1071,11 @@ while running:
             powerups = pygame.sprite.Group()
             powerups.add(powerup)
 
+            platform2 = Platform2()
             platform = Platform()
             platforms = pygame.sprite.Group()
-            platforms.add(platform)
+            platforms.add(platform, platform2)
+
 
             rocket = Rocket()
             obstacles = pygame.sprite.Group()
@@ -1066,7 +1109,7 @@ while running:
             enemy_healthBar = Enemy_HealthBar()
 
             all_sprites = pygame.sprite.Group()
-            all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar)
+            all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2)
 
             score = 0
 
@@ -1077,8 +1120,11 @@ while running:
         if enemy_healthBar.healthbar_count == 5:
             boss.kill()
             score += 500
+            newPink()
+            newYellow()
         explosion_sound = mixer.Sound("explosion.wav")
         explosion_sound.play()
+        
         
 
 
@@ -1092,10 +1138,11 @@ while running:
     
     hit_powerup = pygame.sprite.spritecollide(player, powerups, True, pygame.sprite.collide_mask)
     if hit_powerup:
-        #powerup_sound = mixer.Sound("Picked_Coin_Echo.wav")
-        #powerup_sound.play()
+        powerup_sound = mixer.Sound("SFX_Powerup_01.wav")
+        powerup_sound.play()
         powerup.kill()
-        player.shoot_delay = 000 # WORK ON THIS SHOOT DELAY = 0        
+        player.shoot_delay = 000 # WORK ON THIS SHOOT DELAY = 0
+
 
     # DRAW
     rel_x = bkgr_x % background.get_rect().width
