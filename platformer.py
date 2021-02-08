@@ -571,26 +571,21 @@ class Meteor(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.center = (WIDTH / 2, HEIGHT / 2)
         self.rect.x = random.randrange(WIDTH - self.rect.width)
-        self.rect.y = random.randrage(-100, -40)
-        self.speedy = random.randrange(1, 8)
-        self.speedx = random.randrange(-3, 3)
+        self.rect.y = random.randrange(-100, -40)
+        self.speedy = random.randrange(7, 10)
+        self.speedx = random.randrange(-5, 5)
 
     def update(self):
-        self.rect.x += self.speedx
-        self.rect.y += self.speedy
-        if self.rect.top > HEIGHT + 10:
-            self.rect.x = random.randrange(WIDTH - self.rect.width)
-            self.rect.y = random.randrange(-100, -40)
-            self.speedy = random.randrange(1, 8)
 
-        #if score >= 100 or score >= 200 or score >= 300:
+            self.rect.x += self.speedx
+            self.rect.y += self.speedy
+            if self.rect.right > WIDTH or self.rect.top > HEIGHT - 50 or self.rect.left < 0:
+                self.kill()
+                newMeteor()
+            
+                
 
-         #   self.rect.y += 10
 
-          #  if self.rect. > HEIGHT:
-             #   self.kill()
-
-            #self.mask = pygame.mask.from_surface(self.image)
 
 class Rocket(pygame.sprite.Sprite):
     def __init__(self):
@@ -810,6 +805,11 @@ def newBoss():
     all_sprites.add(boss)
     bosses.add(boss)
 
+def newMeteor():
+    meteor = Meteor()
+    all_sprites.add(meteor)
+    meteors.add(meteor)
+
 # GAME LOOP:
 #   Process Events
 #   Update
@@ -875,6 +875,7 @@ while running:
                 show_end_screen()
                 player = Player()
                 powerup = Powerup()
+                powerup2 = Powerup2()
 
                 powerups = pygame.sprite.Group()
                 powerups.add(powerup)
@@ -886,10 +887,13 @@ while running:
                 platforms = pygame.sprite.Group()
                 platforms.add(platform, platform2)
 
-
                 rocket = Rocket()
                 obstacles = pygame.sprite.Group()
                 obstacles.add(rocket)
+
+                meteor = Meteor()
+                meteors = pygame.sprite.Group()
+                meteors.add(meteor)
 
                 mob = Mob()
 
@@ -919,7 +923,8 @@ while running:
                 enemy_healthBar = Enemy_HealthBar()
 
                 all_sprites = pygame.sprite.Group()
-                all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2, powerup2)
+                all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2, powerup2, meteor)
+
 
                 score = 0
 
@@ -940,21 +945,25 @@ while running:
                 show_end_screen()
                 player = Player()
                 powerup = Powerup()
-                powerups2 = pygame.sprite.Group()
-                powerups2.add(powerup2)
+                powerup2 = Powerup2()
 
                 powerups = pygame.sprite.Group()
                 powerups.add(powerup)
+                powerups2 = pygame.sprite.Group()
+                powerups2.add(powerup2)
 
                 platform2 = Platform2()
                 platform = Platform()
                 platforms = pygame.sprite.Group()
                 platforms.add(platform, platform2)
 
-
                 rocket = Rocket()
                 obstacles = pygame.sprite.Group()
                 obstacles.add(rocket)
+
+                meteor = Meteor()
+                meteors = pygame.sprite.Group()
+                meteors.add(meteor)
 
                 mob = Mob()
 
@@ -984,7 +993,7 @@ while running:
                 enemy_healthBar = Enemy_HealthBar()
 
                 all_sprites = pygame.sprite.Group()
-                all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2, powerup2)
+                all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2, powerup2, meteor)
 
                 score = 0
 
@@ -1007,21 +1016,25 @@ while running:
                 show_end_screen()
                 player = Player()
                 powerup = Powerup()
-                powerups2 = pygame.sprite.Group()
-                powerups2.add(powerup2)
+                powerup2 = Powerup2()
 
                 powerups = pygame.sprite.Group()
                 powerups.add(powerup)
+                powerups2 = pygame.sprite.Group()
+                powerups2.add(powerup2)
 
                 platform2 = Platform2()
                 platform = Platform()
                 platforms = pygame.sprite.Group()
                 platforms.add(platform, platform2)
 
-
                 rocket = Rocket()
                 obstacles = pygame.sprite.Group()
                 obstacles.add(rocket)
+
+                meteor = Meteor()
+                meteors = pygame.sprite.Group()
+                meteors.add(meteor)
 
                 mob = Mob()
 
@@ -1051,7 +1064,7 @@ while running:
                 enemy_healthBar = Enemy_HealthBar()
 
                 all_sprites = pygame.sprite.Group()
-                all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2, powerup2)
+                all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2, powerup2, meteor)
 
                 score = 0
 
@@ -1086,21 +1099,25 @@ while running:
                 show_end_screen()
                 player = Player()
                 powerup = Powerup()
-                powerups2 = pygame.sprite.Group()
-                powerups2.add(powerup2)
+                powerup2 = Powerup2()
 
                 powerups = pygame.sprite.Group()
                 powerups.add(powerup)
+                powerups2 = pygame.sprite.Group()
+                powerups2.add(powerup2)
 
                 platform2 = Platform2()
                 platform = Platform()
                 platforms = pygame.sprite.Group()
                 platforms.add(platform, platform2)
 
-
                 rocket = Rocket()
                 obstacles = pygame.sprite.Group()
                 obstacles.add(rocket)
+
+                meteor = Meteor()
+                meteors = pygame.sprite.Group()
+                meteors.add(meteor)
 
                 mob = Mob()
 
@@ -1130,7 +1147,7 @@ while running:
                 enemy_healthBar = Enemy_HealthBar()
 
                 all_sprites = pygame.sprite.Group()
-                all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2, powerup2)
+                all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2, powerup2, meteor)
 
                 score = 0
 
@@ -1146,6 +1163,7 @@ while running:
             show_end_screen()
             player = Player()
             powerup = Powerup()
+            powerup2 = Powerup2()
 
             powerups = pygame.sprite.Group()
             powerups.add(powerup)
@@ -1157,10 +1175,13 @@ while running:
             platforms = pygame.sprite.Group()
             platforms.add(platform, platform2)
 
-
             rocket = Rocket()
             obstacles = pygame.sprite.Group()
             obstacles.add(rocket)
+
+            meteor = Meteor()
+            meteors = pygame.sprite.Group()
+            meteors.add(meteor)
 
             mob = Mob()
 
@@ -1190,9 +1211,77 @@ while running:
             enemy_healthBar = Enemy_HealthBar()
 
             all_sprites = pygame.sprite.Group()
-            all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2, powerup2)
+            all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2, powerup2, meteor)
+
 
             score = 0
+
+    hit_meteor = pygame.sprite.spritecollide(player, meteors, True, pygame.sprite.collide_mask)
+    if hit_meteor:
+        explosion_sound = mixer.Sound("explosion.wav")
+        explosion_sound.play()
+        meteor.kill()
+        newMeteor()
+        newMeteor()
+        healthBar.setHealth(-1)
+        if healthBar.healthbar_count == 5:
+            start = False
+            mixer.music.stop()
+            show_end_screen()
+            player = Player()
+            powerup = Powerup()
+            powerup2 = Powerup2()
+
+            powerups = pygame.sprite.Group()
+            powerups.add(powerup)
+            powerups2 = pygame.sprite.Group()
+            powerups2.add(powerup2)
+
+            platform2 = Platform2()
+            platform = Platform()
+            platforms = pygame.sprite.Group()
+            platforms.add(platform, platform2)
+
+            rocket = Rocket()
+            obstacles = pygame.sprite.Group()
+            obstacles.add(rocket)
+
+            meteor = Meteor()
+            meteors = pygame.sprite.Group()
+            meteors.add(meteor)
+
+            mob = Mob()
+
+            boss = Boss()
+
+            alien_yellow = Yellow2()
+            aliens_yellow = pygame.sprite.Group()
+            aliens_yellow.add(alien_yellow)
+
+            alien_pink = Pink3()
+            aliens_pink = pygame.sprite.Group()
+            aliens_pink.add(alien_pink)
+
+            enemyship = Enemyship()
+            enemyships = pygame.sprite.Group()
+            enemyships.add(enemyship)
+
+            mobs = pygame.sprite.Group()
+            mobs.add(mob)
+
+            bosses = pygame.sprite.Group()
+            bosses.add(boss)
+
+            bullets = pygame.sprite.Group()
+
+            healthBar = HealthBar()
+            enemy_healthBar = Enemy_HealthBar()
+
+            all_sprites = pygame.sprite.Group()
+            all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2, powerup2, meteor)
+
+            score = 0
+
 
 
     hits_bosses = pygame.sprite.groupcollide(bosses, bullets, False, True, pygame.sprite.collide_mask)
@@ -1230,10 +1319,9 @@ while running:
         powerup_sound.play()
         powerup2.kill()
         if score <= 200:
-            PLAYER_ACC = 3.5
+            PLAYER_ACC = 3.5 
 
 
-        
 
 
     # DRAW
