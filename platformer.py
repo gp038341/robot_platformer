@@ -4,7 +4,7 @@ import os
 import time
 from pygame import mixer
                                    
-WIDTH = 1500
+WIDTH = 1950
 HEIGHT = 1000
 FPS = 30
 GROUND = HEIGHT - 30
@@ -31,6 +31,7 @@ game_folder = os.path.dirname(__file__)
 img_folder = os.path.join(game_folder, "img")
 
 
+
 #DRAW TEXT
 font_name = pygame.font.match_font("georgia")
 def draw_text(screen, text, size, x, y):
@@ -43,36 +44,38 @@ def draw_text(screen, text, size, x, y):
 
 #SHOW START SCREEN FUNCTION
 def show_start_screen():
-    screen.fill(BLACK)
+    screen.blit(background, background_rect)
     draw_text(screen, "ROBOTS VS ALIENS", 64, WIDTH / 2 - 200, HEIGHT / 4)
     draw_text(screen, "Arrow keys to move, space to shoot", 22, WIDTH / 2 - 200, HEIGHT / 2)
+    draw_text(screen, "press 'q' to quit", 22, WIDTH / 2 - 200, HEIGHT / 1.6)
     draw_text(screen, "Press a key to begin...", 18, WIDTH / 2 - 200, HEIGHT * 3 / 4)
     pygame.display.flip()
     waiting = True
     while waiting:
+        keystate = pygame.key.get_pressed()
         clock.tick(FPS)
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+            if event.type == pygame.QUIT or keystate[pygame.K_q]:
                 pygame.quit()
             if event.type == pygame.KEYUP:
                 waiting = False
 
 
 def show_end_screen():
-    screen.fill(BLACK)
+    screen.blit(background, background_rect)
     draw_text(screen, "GAME OVER", 64, WIDTH / 2 - 200, HEIGHT / 4)
     draw_text(screen, "Press ENTER to try again", 22, WIDTH / 2 - 200, HEIGHT / 2 + 200)
-    draw_text(screen, str(score), 35, 850, 500)
-    draw_text(screen, "FINAL SCORE: ", 35, 550, 500)
+    draw_text(screen, str(score), 35, 1050, 500)
+    draw_text(screen, "FINAL SCORE: ", 35, 750, 500)
     pygame.display.flip()
     waiting = True
     while waiting:
-        time.sleep(1.55)
+        keystate = pygame.key.get_pressed()
         clock.tick(FPS)
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+            if event.type == pygame.QUIT or keystate[pygame.K_q]:
                 pygame.quit()
-            if event.type == pygame.KEYUP:
+            if keystate[pygame.K_RETURN]:
                 waiting = False
                 mixer.music.play()
 
@@ -177,6 +180,9 @@ class Enemy_HealthBar(pygame.sprite.Sprite):
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
+
+        if score >= 150:
+            PLAYER_ACC = 1.5
 
         #LOAD ANIMATIONS
         self.running_right = [pygame.image.load(os.path.join(img_folder, "character_robot_run0.png")).convert(),
@@ -343,8 +349,8 @@ class Player(pygame.sprite.Sprite):
         self.pos += self.vel + 0.5 * self.acc
 
         #WRAP AROUND THE SIDES OF THE SCREEN
-        if self.pos.x > WIDTH - 30:
-            self.pos.x = WIDTH - 30
+        if self.pos.x > WIDTH - 60:
+            self.pos.x = WIDTH - 60
         if self.pos.x < 0 + 30:
             self.pos.x = 0 + 30
 
@@ -378,7 +384,7 @@ class Boss(pygame.sprite.Sprite):
 
         self.rect = self.image.get_rect()
         self.rect.center = (WIDTH / 2, HEIGHT / 2)
-        self.rect.x = 1500
+        self.rect.x = 1950
         self.rect.y = 695
 
 
@@ -418,7 +424,7 @@ class Mob(pygame.sprite.Sprite):
 
         self.rect = self.image.get_rect()
         self.rect.center = (WIDTH / 2, HEIGHT / 2)
-        self.rect.x = 1500
+        self.rect.x = WIDTH + 10
         self.rect.y = 895
 
 
@@ -455,7 +461,7 @@ class Yellow2(pygame.sprite.Sprite):
         self.image.set_colorkey(BLACK)
         self.rect = self.image.get_rect()
         self.rect.center = (WIDTH / 2, HEIGHT / 2)
-        self.rect.x = 1500
+        self.rect.x = WIDTH + 20
         self.rect.y = 895
 
 
@@ -554,6 +560,38 @@ class Platform2(pygame.sprite.Sprite):
 
         self.mask = pygame.mask.from_surface(self.image)
 
+
+
+class Meteor(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load(os.path.join(img_folder, "meteorBig.png")).convert()
+        self.image = pygame.transform.scale(self.image, (50, 50))
+        self.image.set_colorkey(BLACK)
+        self.rect = self.image.get_rect()
+        self.rect.center = (WIDTH / 2, HEIGHT / 2)
+        self.rect.x = random.randrange(WIDTH - self.rect.width)
+        self.rect.y = random.randrage(-100, -40)
+        self.speedy = random.randrange(1, 8)
+        self.speedx = random.randrange(-3, 3)
+
+    def update(self):
+        self.rect.x += self.speedx
+        self.rect.y += self.speedy
+        if self.rect.top > HEIGHT + 10:
+            self.rect.x = random.randrange(WIDTH - self.rect.width)
+            self.rect.y = random.randrange(-100, -40)
+            self.speedy = random.randrange(1, 8)
+
+        #if score >= 100 or score >= 200 or score >= 300:
+
+         #   self.rect.y += 10
+
+          #  if self.rect. > HEIGHT:
+             #   self.kill()
+
+            #self.mask = pygame.mask.from_surface(self.image)
+
 class Rocket(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
@@ -577,12 +615,37 @@ class Powerup(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.center = (WIDTH / 2, HEIGHT / 2)
         
-        
-
 
     def update(self):
 
             if score >= 200:
+
+
+                self.rect.x += 5
+
+                if self.rect.left > WIDTH:
+                    self.kill()
+                self.mask = pygame.mask.from_surface(self.image)
+
+            else:
+                self.rect.x = -100
+                self.rect.y = random.randint(500, 900)
+
+                
+
+class Powerup2(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load(os.path.join(img_folder, "bolt-icon-button-green.png")).convert()
+        self.image = pygame.transform.scale(self.image, (50, 50))
+        self.image.set_colorkey(BLACK)
+        self.rect = self.image.get_rect()
+        self.rect.center = (WIDTH / 2, HEIGHT / 2)
+        
+
+    def update(self):
+
+            if score >= 50:
 
 
                 self.rect.x += 5
@@ -656,7 +719,7 @@ class Bulletleft(pygame.sprite.Sprite):
 #INITIALIZE VARIABLES
 pygame.init()
 pygame.mixer.init()
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
+screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 pygame.display.set_caption("My Game")
 
 #BACKGROUND MUSIC
@@ -677,9 +740,12 @@ bkgr_x = 0
 
 player = Player()
 powerup = Powerup()
+powerup2 = Powerup2()
 
 powerups = pygame.sprite.Group()
 powerups.add(powerup)
+powerups2 = pygame.sprite.Group()
+powerups2.add(powerup2)
 
 platform2 = Platform2()
 platform = Platform()
@@ -689,6 +755,10 @@ platforms.add(platform, platform2)
 rocket = Rocket()
 obstacles = pygame.sprite.Group()
 obstacles.add(rocket)
+
+meteor = Meteor()
+meteors = pygame.sprite.Group()
+meteors.add(meteor)
 
 mob = Mob()
 
@@ -718,7 +788,7 @@ healthBar = HealthBar()
 enemy_healthBar = Enemy_HealthBar()
 
 all_sprites = pygame.sprite.Group()
-all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2)
+all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2, powerup2, meteor)
 
 def newMob():
     mob = Mob()
@@ -763,8 +833,9 @@ while running:
     clock.tick(FPS)
 
     #PROCESS EVENTS
+    keystate = pygame.key.get_pressed()
     for event in pygame.event.get():
-        if event.type == pygame.QUIT:
+        if event.type == pygame.QUIT or keystate[pygame.K_q]:
             running = False
 
     #CHECKS TO SEE IF LASER HITS MOB
@@ -807,6 +878,8 @@ while running:
 
                 powerups = pygame.sprite.Group()
                 powerups.add(powerup)
+                powerups2 = pygame.sprite.Group()
+                powerups2.add(powerup2)
 
                 platform2 = Platform2()
                 platform = Platform()
@@ -846,7 +919,7 @@ while running:
                 enemy_healthBar = Enemy_HealthBar()
 
                 all_sprites = pygame.sprite.Group()
-                all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2)
+                all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2, powerup2)
 
                 score = 0
 
@@ -867,6 +940,8 @@ while running:
                 show_end_screen()
                 player = Player()
                 powerup = Powerup()
+                powerups2 = pygame.sprite.Group()
+                powerups2.add(powerup2)
 
                 powerups = pygame.sprite.Group()
                 powerups.add(powerup)
@@ -909,7 +984,7 @@ while running:
                 enemy_healthBar = Enemy_HealthBar()
 
                 all_sprites = pygame.sprite.Group()
-                all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2)
+                all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2, powerup2)
 
                 score = 0
 
@@ -932,6 +1007,8 @@ while running:
                 show_end_screen()
                 player = Player()
                 powerup = Powerup()
+                powerups2 = pygame.sprite.Group()
+                powerups2.add(powerup2)
 
                 powerups = pygame.sprite.Group()
                 powerups.add(powerup)
@@ -974,7 +1051,7 @@ while running:
                 enemy_healthBar = Enemy_HealthBar()
 
                 all_sprites = pygame.sprite.Group()
-                all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2)
+                all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2, powerup2)
 
                 score = 0
 
@@ -1009,6 +1086,8 @@ while running:
                 show_end_screen()
                 player = Player()
                 powerup = Powerup()
+                powerups2 = pygame.sprite.Group()
+                powerups2.add(powerup2)
 
                 powerups = pygame.sprite.Group()
                 powerups.add(powerup)
@@ -1051,7 +1130,7 @@ while running:
                 enemy_healthBar = Enemy_HealthBar()
 
                 all_sprites = pygame.sprite.Group()
-                all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2)
+                all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2, powerup2)
 
                 score = 0
 
@@ -1070,6 +1149,8 @@ while running:
 
             powerups = pygame.sprite.Group()
             powerups.add(powerup)
+            powerups2 = pygame.sprite.Group()
+            powerups2.add(powerup2)
 
             platform2 = Platform2()
             platform = Platform()
@@ -1109,7 +1190,7 @@ while running:
             enemy_healthBar = Enemy_HealthBar()
 
             all_sprites = pygame.sprite.Group()
-            all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2)
+            all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2, powerup2)
 
             score = 0
 
@@ -1142,6 +1223,17 @@ while running:
         powerup_sound.play()
         powerup.kill()
         player.shoot_delay = 000 # WORK ON THIS SHOOT DELAY = 0
+
+    hit_powerup2 = pygame.sprite.spritecollide(player, powerups2, True, pygame.sprite.collide_mask)
+    if hit_powerup2 and score < 150:
+        powerup_sound = mixer.Sound("SFX_Powerup_01.wav")
+        powerup_sound.play()
+        powerup2.kill()
+        if score <= 200:
+            PLAYER_ACC = 3.5
+
+
+        
 
 
     # DRAW
