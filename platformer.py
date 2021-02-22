@@ -581,9 +581,7 @@ class Meteor(pygame.sprite.Sprite):
             self.rect.y += self.speedy
             if self.rect.right > WIDTH or self.rect.top > HEIGHT - 50 or self.rect.left < 0:
                 self.kill()
-                newMeteor()
-            
-                
+                newMeteor()            
 
 
 
@@ -732,6 +730,7 @@ background_rect = background.get_rect()
 bkgr_x = 0
 
 #SPRITE GROUPS
+all_sprites = pygame.sprite.Group()
 
 player = Player()
 powerup = Powerup()
@@ -751,9 +750,12 @@ rocket = Rocket()
 obstacles = pygame.sprite.Group()
 obstacles.add(rocket)
 
-meteor = Meteor()
 meteors = pygame.sprite.Group()
-meteors.add(meteor)
+
+for i in range(5):
+    meteor = Meteor()
+    all_sprites.add(meteor)
+    meteors.add(meteor)
 
 mob = Mob()
 
@@ -782,7 +784,7 @@ bullets = pygame.sprite.Group()
 healthBar = HealthBar()
 enemy_healthBar = Enemy_HealthBar()
 
-all_sprites = pygame.sprite.Group()
+
 all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2, powerup2, meteor)
 
 def newMob():
@@ -1318,11 +1320,16 @@ while running:
         powerup_sound = mixer.Sound("SFX_Powerup_01.wav")
         powerup_sound.play()
         powerup2.kill()
-        if score <= 200:
-            PLAYER_ACC = 3.5 
+        if score <= 200 or start == False: 
+            PLAYER_ACC = 3.5
+        
 
-
-
+    hits_meteor = pygame.sprite.groupcollide(meteors, bullets, True, True, pygame.sprite.collide_mask)
+    for hit in hits_meteor:
+        explosion_sound = mixer.Sound("explosion.wav")
+        explosion_sound.play()
+        score += 5
+        newMeteor()
 
     # DRAW
     rel_x = bkgr_x % background.get_rect().width
