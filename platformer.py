@@ -14,7 +14,7 @@ score = 0
 
 #CONSTANTS - PHYSICS
 PLAYER_ACC = 1.5
-PLAYER_FRICTION = -0.12
+PLAYER_FRICTION = -0.095   #.12
 PLAYER_GRAV = 1.1
 vec = pygame.math.Vector2
 
@@ -309,17 +309,18 @@ class Player(pygame.sprite.Sprite):
                 self.image.set_colorkey(BLACK)
                 
                 #Slide
-        if keystate[pygame.K_DOWN] and keystate[pygame.K_RIGHT]:
+        if keystate[pygame.K_DOWN] and self.vel.x >= 2:
             if self.vel.y == 0:
                 self.image = pygame.image.load(os.path.join(img_folder, "character_robot_down.png")).convert()
                 self.image = pygame.transform.scale(self.image, (75, 100))
                 self.image.set_colorkey(BLACK)
             
                 #Slide Left
-        if keystate[pygame.K_DOWN] and keystate[pygame.K_LEFT] and self.vel.y == 0:
-            self.image = pygame.image.load(os.path.join(img_folder, "character_robot_down_left.png")).convert()
-            self.image = pygame.transform.scale(self.image, (75, 100))
-            self.image.set_colorkey(BLACK)
+        if keystate[pygame.K_DOWN] and self.vel.x <= -2:
+            if self.vel.y == 0:
+                self.image = pygame.image.load(os.path.join(img_folder, "character_robot_down_left.png")).convert()
+                self.image = pygame.transform.scale(self.image, (75, 100))
+                self.image.set_colorkey(BLACK)
 
                 #Run Right
         if keystate[pygame.K_RIGHT] and self.vel.y == 0:
@@ -565,21 +566,35 @@ class Platform2(pygame.sprite.Sprite):
 class Meteor(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load(os.path.join(img_folder, "meteorBig.png")).convert()
-        self.image = pygame.transform.scale(self.image, (50, 50))
-        self.image.set_colorkey(BLACK)
+        meteor_image = pygame.image.load(os.path.join(img_folder, "meteorBig.png")).convert()
+        self.image_orig = meteor_image
+        self.image_orig = pygame.transform.scale(self.image_orig, (50, 50))
+        self.image_orig.set_colorkey(BLACK)
+        self.image = self.image_orig.copy()
         self.rect = self.image.get_rect()
         self.rect.center = (WIDTH / 2, HEIGHT / 2)
         self.rect.x = random.randrange(WIDTH - self.rect.width)
         self.rect.y = random.randrange(-100, -40)
         self.speedy = random.randrange(7, 10)
         self.speedx = random.randrange(-5, 5)
-
+        self.rot = 0
+        self.rot_speed = random.randrange(-7, 7 )
+        self.last_update = pygame.time.get_ticks()
+        
+    def rotate(self):
+        now = pygame.time.get_ticks()
+        if now - self.last_update > 50:
+            self.last_update = now
+            self.rot = (self.rot + self.rot_speed) % 360
+            self.image = pygame.transform.rotate(self.image_orig, self.rot)
+            
+        
     def update(self):
-
+            self.rotate()
+            
             self.rect.x += self.speedx
             self.rect.y += self.speedy
-            if self.rect.right > WIDTH or self.rect.top > HEIGHT - 50 or self.rect.left < 0:
+            if self.rect.right > WIDTH or self.rect.top > HEIGHT - 83 or self.rect.left < -45:
                 self.kill()
                 newMeteor()            
 
@@ -875,6 +890,7 @@ while running:
                 start = False
                 mixer.music.stop()
                 show_end_screen()
+                all_sprites = pygame.sprite.Group()
                 player = Player()
                 powerup = Powerup()
                 powerup2 = Powerup2()
@@ -893,9 +909,12 @@ while running:
                 obstacles = pygame.sprite.Group()
                 obstacles.add(rocket)
 
-                meteor = Meteor()
                 meteors = pygame.sprite.Group()
-                meteors.add(meteor)
+
+                for i in range(5):
+                    meteor = Meteor()
+                    all_sprites.add(meteor)
+                    meteors.add(meteor)
 
                 mob = Mob()
 
@@ -924,7 +943,6 @@ while running:
                 healthBar = HealthBar()
                 enemy_healthBar = Enemy_HealthBar()
 
-                all_sprites = pygame.sprite.Group()
                 all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2, powerup2, meteor)
 
 
@@ -945,6 +963,7 @@ while running:
                 start = False
                 mixer.music.stop()
                 show_end_screen()
+                all_sprites = pygame.sprite.Group()
                 player = Player()
                 powerup = Powerup()
                 powerup2 = Powerup2()
@@ -963,9 +982,12 @@ while running:
                 obstacles = pygame.sprite.Group()
                 obstacles.add(rocket)
 
-                meteor = Meteor()
                 meteors = pygame.sprite.Group()
-                meteors.add(meteor)
+
+                for i in range(5):
+                    meteor = Meteor()
+                    all_sprites.add(meteor)
+                    meteors.add(meteor)
 
                 mob = Mob()
 
@@ -994,7 +1016,6 @@ while running:
                 healthBar = HealthBar()
                 enemy_healthBar = Enemy_HealthBar()
 
-                all_sprites = pygame.sprite.Group()
                 all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2, powerup2, meteor)
 
                 score = 0
@@ -1016,6 +1037,7 @@ while running:
                 start = False
                 mixer.music.stop()
                 show_end_screen()
+                all_sprites = pygame.sprite.Group()
                 player = Player()
                 powerup = Powerup()
                 powerup2 = Powerup2()
@@ -1034,9 +1056,12 @@ while running:
                 obstacles = pygame.sprite.Group()
                 obstacles.add(rocket)
 
-                meteor = Meteor()
                 meteors = pygame.sprite.Group()
-                meteors.add(meteor)
+
+                for i in range(5):
+                    meteor = Meteor()
+                    all_sprites.add(meteor)
+                    meteors.add(meteor)
 
                 mob = Mob()
 
@@ -1065,7 +1090,6 @@ while running:
                 healthBar = HealthBar()
                 enemy_healthBar = Enemy_HealthBar()
 
-                all_sprites = pygame.sprite.Group()
                 all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2, powerup2, meteor)
 
                 score = 0
@@ -1099,6 +1123,7 @@ while running:
                 start = False
                 mixer.music.stop()
                 show_end_screen()
+                all_sprites = pygame.sprite.Group()
                 player = Player()
                 powerup = Powerup()
                 powerup2 = Powerup2()
@@ -1117,9 +1142,12 @@ while running:
                 obstacles = pygame.sprite.Group()
                 obstacles.add(rocket)
 
-                meteor = Meteor()
                 meteors = pygame.sprite.Group()
-                meteors.add(meteor)
+
+                for i in range(5):
+                    meteor = Meteor()
+                    all_sprites.add(meteor)
+                    meteors.add(meteor)
 
                 mob = Mob()
 
@@ -1148,7 +1176,6 @@ while running:
                 healthBar = HealthBar()
                 enemy_healthBar = Enemy_HealthBar()
 
-                all_sprites = pygame.sprite.Group()
                 all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2, powerup2, meteor)
 
                 score = 0
@@ -1163,6 +1190,7 @@ while running:
             start = False
             mixer.music.stop()
             show_end_screen()
+            all_sprites = pygame.sprite.Group()
             player = Player()
             powerup = Powerup()
             powerup2 = Powerup2()
@@ -1181,9 +1209,12 @@ while running:
             obstacles = pygame.sprite.Group()
             obstacles.add(rocket)
 
-            meteor = Meteor()
             meteors = pygame.sprite.Group()
-            meteors.add(meteor)
+
+            for i in range(5):
+                meteor = Meteor()
+                all_sprites.add(meteor)
+                meteors.add(meteor)
 
             mob = Mob()
 
@@ -1212,7 +1243,6 @@ while running:
             healthBar = HealthBar()
             enemy_healthBar = Enemy_HealthBar()
 
-            all_sprites = pygame.sprite.Group()
             all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2, powerup2, meteor)
 
 
@@ -1230,6 +1260,7 @@ while running:
             start = False
             mixer.music.stop()
             show_end_screen()
+            all_sprites = pygame.sprite.Group()
             player = Player()
             powerup = Powerup()
             powerup2 = Powerup2()
@@ -1248,9 +1279,12 @@ while running:
             obstacles = pygame.sprite.Group()
             obstacles.add(rocket)
 
-            meteor = Meteor()
             meteors = pygame.sprite.Group()
-            meteors.add(meteor)
+
+            for i in range(5):
+                meteor = Meteor()
+                all_sprites.add(meteor)
+                meteors.add(meteor)
 
             mob = Mob()
 
@@ -1279,7 +1313,6 @@ while running:
             healthBar = HealthBar()
             enemy_healthBar = Enemy_HealthBar()
 
-            all_sprites = pygame.sprite.Group()
             all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2, powerup2, meteor)
 
             score = 0
@@ -1313,22 +1346,27 @@ while running:
         powerup_sound = mixer.Sound("SFX_Powerup_01.wav")
         powerup_sound.play()
         powerup.kill()
-        player.shoot_delay = 000 # WORK ON THIS SHOOT DELAY = 0
+        player.shoot_delay = 000
 
     hit_powerup2 = pygame.sprite.spritecollide(player, powerups2, True, pygame.sprite.collide_mask)
     if hit_powerup2 and score < 150:
         powerup_sound = mixer.Sound("SFX_Powerup_01.wav")
         powerup_sound.play()
         powerup2.kill()
-        if score <= 200 or start == False: 
-            PLAYER_ACC = 3.5
+        PLAYER_ACC = 3.5
+        
+    elif score >= 150: 
+        PLAYER_ACC = 1.5
+        
+    elif score == 0:
+        PLAYER_ACC = 1.5
         
 
     hits_meteor = pygame.sprite.groupcollide(meteors, bullets, True, True, pygame.sprite.collide_mask)
     for hit in hits_meteor:
         explosion_sound = mixer.Sound("explosion.wav")
         explosion_sound.play()
-        score += 5
+        score += 20
         newMeteor()
 
     # DRAW
