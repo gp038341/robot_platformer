@@ -174,6 +174,41 @@ class Enemy_HealthBar(pygame.sprite.Sprite):
             draw_text(screen, "BOSS HEALTH: ", 15, 1200, 60)
 
 
+class Explosion(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
+
+        self.explosion = [pygame.image.load(os.path.join(img_folder, "bubble_explo1.png")).convert(),
+                          pygame.image.load(os.path.join(img_folder, "bubble_explo2.png")).convert(),
+                          pygame.image.load(os.path.join(img_folder, "bubble_explo3.png")).convert(),
+                          pygame.image.load(os.path.join(img_folder, "bubble_explo4.png")).convert(),
+                          pygame.image.load(os.path.join(img_folder, "bubble_explo5.png")).convert(),
+                          pygame.image.load(os.path.join(img_folder, "bubble_explo6.png")).convert(),
+                          pygame.image.load(os.path.join(img_folder, "bubble_explo7.png")).convert(),
+                          pygame.image.load(os.path.join(img_folder, "bubble_explo8.png")).convert(),
+                          pygame.image.load(os.path.join(img_folder, "bubble_explo9.png")).convert()
+                          ]
+        self.explosion_count = 0
+        self.image = self.explosion[self.explosion_count]
+        self.image = pygame.transform.scale(self.image, (75, 100))
+        self.image.set_colorkey(BLACK)
+
+        self.rect = self.image.get_rect()
+        self.rect.center = (WIDTH / 2, HEIGHT / 2)
+        self.rect.centerx = x
+        self.rect.centery = y
+
+
+    def update(self):
+        self.image = self.explosion[self.explosion_count]
+        self.image = pygame.transform.scale(self.image, (75, 100))
+        self.image.set_colorkey(BLACK)
+
+        self.explosion_count += 1
+        if self.explosion_count > 8:
+            self.kill()
+
+
                 
 
 
@@ -308,7 +343,7 @@ class Player(pygame.sprite.Sprite):
                 self.image = pygame.transform.scale(self.image, (75, 100))
                 self.image.set_colorkey(BLACK)
                 
-                #Slide
+                #Slide       #Not sure if to get rid of the slide animations
         if keystate[pygame.K_DOWN] and self.vel.x >= 2:
             if self.vel.y == 0:
                 self.image = pygame.image.load(os.path.join(img_folder, "character_robot_down.png")).convert()
@@ -408,6 +443,13 @@ class Boss(pygame.sprite.Sprite):
                 self.rect.left = WIDTH
 
             self.mask = pygame.mask.from_surface(self.image)
+
+    def getX(self):
+        return self.rect.centerx
+
+    def getY(self):
+        return self.rect.centery
+
             
         
 
@@ -447,6 +489,12 @@ class Mob(pygame.sprite.Sprite):
 
         self.mask = pygame.mask.from_surface(self.image)
 
+    def getX(self):
+        return self.rect.centerx
+
+    def getY(self):
+        return self.rect.centery
+
             
 
 class Yellow2(pygame.sprite.Sprite):
@@ -464,6 +512,12 @@ class Yellow2(pygame.sprite.Sprite):
         self.rect.center = (WIDTH / 2, HEIGHT / 2)
         self.rect.x = WIDTH + 20
         self.rect.y = 895
+
+    def getX(self):
+        return self.rect.centerx
+
+    def getY(self):
+        return self.rect.centery
 
 
         
@@ -518,6 +572,12 @@ class Pink3(pygame.sprite.Sprite):
             self.rect.left = 0
             
         self.mask = pygame.mask.from_surface(self.image)
+
+    def getX(self):
+        return self.rect.centerx
+
+    def getY(self):
+        return self.rect.centery
 
 
 class Platform(pygame.sprite.Sprite):
@@ -596,7 +656,13 @@ class Meteor(pygame.sprite.Sprite):
             self.rect.y += self.speedy
             if self.rect.right > WIDTH or self.rect.top > HEIGHT - 83 or self.rect.left < -45:
                 self.kill()
-                newMeteor()            
+                newMeteor()
+
+    def getX(self):
+        return self.rect.centerx
+
+    def getY(self):
+        return self.rect.centery
 
 
 
@@ -685,7 +751,15 @@ class Enemyship(pygame.sprite.Sprite):
         if self.rect.right < 0:
             self.rect.left = WIDTH
 
+    def getX(self):
+        return self.rect.centerx
+
+    def getY(self):
+        return self.rect.centery
+
         self.mask = pygame.mask.from_surface(self.image)
+
+        
 class Bulletright(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
@@ -800,6 +874,7 @@ healthBar = HealthBar()
 enemy_healthBar = Enemy_HealthBar()
 
 
+
 all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2, powerup2, meteor)
 
 def newMob():
@@ -816,11 +891,6 @@ def newPink():
     alien_pink = Pink3()
     all_sprites.add(alien_pink)
     aliens_pink.add(alien_pink)
-
-def newBoss():
-    boss = Boss()
-    all_sprites.add(boss)
-    bosses.add(boss)
 
 def newMeteor():
     meteor = Meteor()
@@ -843,7 +913,7 @@ while running:
         mixer.music.stop()
         show_start_screen()
         start = False
-        mixer.music.play()
+        mixer.music.play(loops= -1)
 
     
 
@@ -861,6 +931,8 @@ while running:
     for hit in hits:
         explosion_sound = mixer.Sound("explosion.wav")
         explosion_sound.play()
+        explosion = Explosion(hit.getX(), hit.getY()) # x,y position of mob when it was hit
+        all_sprites.add(explosion)
         score += 10
         newMob()
 
@@ -869,6 +941,8 @@ while running:
     for hit in hits_ship:
         explosion_sound = mixer.Sound("explosion.wav")
         explosion_sound.play()
+        explosion = Explosion(hit.getX(), hit.getY()) # x,y position of mob when it was hit
+        all_sprites.add(explosion)
         score += 30
         newMob()
 
@@ -878,8 +952,11 @@ while running:
         explosion_sound.play()
 
     hit_mob = pygame.sprite.spritecollide(player, mobs, True, pygame.sprite.collide_mask)
-    if hit_mob:
-        mob.kill()
+    #if hit_mob:
+    for hit in hit_mob:
+        explosion = Explosion(hit.getX(), hit.getY()) # x,y position of mob when it was hit
+        all_sprites.add(explosion)
+        #mob.kill()
         newMob()
         explosion_sound = mixer.Sound("explosion.wav")
         explosion_sound.play()
@@ -951,11 +1028,13 @@ while running:
 
     #HITS ENEMY SHIP
     hit_ship = pygame.sprite.spritecollide(player, enemyships, True, pygame.sprite.collide_mask)
-    if hit_ship:
+    for hit in hit_ship:
         enemyship.kill()
         newMob()
         explosion_sound = mixer.Sound("explosion.wav")
         explosion_sound.play()
+        explosion = Explosion(hit.getX(), hit.getY()) # x,y position of mob when it was hit
+        all_sprites.add(explosion)
         healthBar.setHealth(-1)
         if healthBar.healthbar_count == 5: 
             player.kill()
@@ -1025,9 +1104,11 @@ while running:
 
     #YELLOW ALIEN COLLISION
     hit_yellow = pygame.sprite.spritecollide(player, aliens_yellow, True, pygame.sprite.collide_mask)
-    if hit_yellow:
+    for hit in hit_yellow:
         explosion_sound = mixer.Sound("explosion.wav")
         explosion_sound.play()
+        explosion = Explosion(hit.getX(), hit.getY()) # x,y position of mob when it was hit
+        all_sprites.add(explosion)
         alien_yellow.kill()
         newYellow()
         healthBar.setHealth(-1)
@@ -1102,6 +1183,8 @@ while running:
     for hit in hits_yellow:
         explosion_sound = mixer.Sound("explosion.wav")
         explosion_sound.play()
+        explosion = Explosion(hit.getX(), hit.getY()) # x,y position of mob when it was hit
+        all_sprites.add(explosion)
         score += 20
         newYellow()
 
@@ -1111,10 +1194,11 @@ while running:
         
     #PINK ALIEN COLLISION
     hit_pink = pygame.sprite.spritecollide(player, aliens_pink, True, pygame.sprite.collide_mask)
-    if hit_pink:
+    for hit in hit_pink:
         explosion_sound = mixer.Sound("explosion.wav")
         explosion_sound.play()
-        alien_pink.kill()
+        explosion = Explosion(hit.getX(), hit.getY()) # x,y position of mob when it was hit
+        all_sprites.add(explosion)
         newPink()
         healthBar.setHealth(-1)
         if healthBar.healthbar_count == 5: 
@@ -1184,7 +1268,9 @@ while running:
     hit_boss = pygame.sprite.spritecollide(player, bosses, True, pygame.sprite.collide_mask)
     if hit_boss:
         explosion_sound = mixer.Sound("explosion.wav")
-        explosion_sound.play() 
+        explosion_sound.play()
+        explosion = Explosion(hit.getX(), hit.getY()) # x,y position of mob when it was hit
+        all_sprites.add(explosion)
         player.kill()
         if end:
             start = False
@@ -1249,10 +1335,11 @@ while running:
             score = 0
 
     hit_meteor = pygame.sprite.spritecollide(player, meteors, True, pygame.sprite.collide_mask)
-    if hit_meteor:
+    for hit in hit_meteor:
         explosion_sound = mixer.Sound("explosion.wav")
         explosion_sound.play()
-        meteor.kill()
+        explosion = Explosion(hit.getX(), hit.getY()) # x,y position of mob when it was hit
+        all_sprites.add(explosion)
         newMeteor()
         newMeteor()
         healthBar.setHealth(-1)
@@ -1313,7 +1400,9 @@ while running:
             healthBar = HealthBar()
             enemy_healthBar = Enemy_HealthBar()
 
-            all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2, powerup2, meteor)
+            explosion = Explosion(10, 100)
+
+            all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2, powerup2, meteor, explosion)
 
             score = 0
 
@@ -1329,6 +1418,8 @@ while running:
             newYellow()
         explosion_sound = mixer.Sound("explosion.wav")
         explosion_sound.play()
+        explosion = Explosion(hit.getX(), hit.getY()) # x,y position of mob when it was hit
+        all_sprites.add(explosion)
         
         
 
@@ -1337,6 +1428,8 @@ while running:
     for hit in hits_pink:
         explosion_sound = mixer.Sound("explosion.wav")
         explosion_sound.play()
+        explosion = Explosion(hit.getX(), hit.getY()) # x,y position of mob when it was hit
+        all_sprites.add(explosion)
         score += 15
         newPink()
 
@@ -1366,6 +1459,8 @@ while running:
     for hit in hits_meteor:
         explosion_sound = mixer.Sound("explosion.wav")
         explosion_sound.play()
+        explosion = Explosion(hit.getX(), hit.getY()) # x,y position of mob when it was hit
+        all_sprites.add(explosion)
         score += 20
         newMeteor()
 
