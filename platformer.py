@@ -276,7 +276,7 @@ class Player(pygame.sprite.Sprite):
         
     def update(self):
 
-        if score >= 1000:
+        if score >= 500:
             player.shoot_delay = 1000
         
         self.image.set_colorkey(BLACK)
