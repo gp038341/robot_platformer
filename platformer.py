@@ -79,6 +79,22 @@ def show_end_screen():
                 waiting = False
                 mixer.music.play()
 
+def show_newlevel_screen():
+    screen.blit(background, background_rect)
+    draw_text(screen, "LEVEL COMPLETE!", 64, WIDTH / 2 - 200, HEIGHT / 4)
+    draw_text(screen, "Press the ENTER key to play the next level!", 22, WIDTH / 2 - 200, HEIGHT / 2)
+    draw_text(screen, "press 'q' to quit", 22, WIDTH / 2 - 200, HEIGHT / 1.6)
+    pygame.display.flip()
+    waiting = True
+    while waiting:
+        keystate = pygame.key.get_pressed()
+        clock.tick(FPS)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT or keystate[pygame.K_q]:
+                pygame.quit()
+            if keystate[pygame.K_RETURN]:
+                waiting = False
+
 
 class HealthBar(pygame.sprite.Sprite):
     def __init__(self):
@@ -167,12 +183,60 @@ class Enemy_HealthBar(pygame.sprite.Sprite):
 
     def update(self):
 
-        if score >= 500:
+        if score >= 600:
             self.image = self.healthbars[self.healthbar_count]
             self.image = pygame.transform.scale(self.image, (300, 100))
             self.image.set_colorkey(BLACK)
             draw_text(screen, "BOSS HEALTH: ", 15, 1200, 60)
 
+class Enemy2_HealthBar(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+
+        self.healthbars = [
+            pygame.image.load(os.path.join(img_folder, "enemy_healthbar0.png")).convert(),
+            pygame.image.load(os.path.join(img_folder, "enemy_healthbar1.png")).convert(),
+            pygame.image.load(os.path.join(img_folder, "enemy_healthbar2.png")).convert(),
+            pygame.image.load(os.path.join(img_folder, "enemy_healthbar3.png")).convert(),
+            pygame.image.load(os.path.join(img_folder, "enemy_healthbar4.png")).convert(),
+            pygame.image.load(os.path.join(img_folder, "enemy_healthbar5.png")).convert()
+            ]
+        self.healthbar_count = 0
+
+        self.image = self.healthbars[self.healthbar_count]
+        self.image = pygame.transform.scale(self.image, (1, 1))
+        self.image.set_colorkey(BLACK)
+
+        #ESTABLISH RECT, STARTING POINT
+        self.rect = self.image.get_rect()
+        self.rect.x = 1200
+        self.rect.y = 130
+
+    def getHealth(self):
+        return self.healthbar_count
+
+    #PASS IN +1 OR -1 TO INCREMENT / DECREMENT HEALTH BAR
+    def setHealth(self, health):
+        
+        if health == 1: #INCREASE HEALTH UNLESS self.healthbar_count is at 0
+            self.healthbar_count -= 1
+            if self.healthbar_count < 0:
+                self.healthbar_count = 0
+
+        elif health == -1: #DECREASE HEALTH, UNLESS self.healthbar_count is at 5
+            self.healthbar_count += 1
+            if self.healthbar_count > 5:
+                self.healthbar_count = 5
+
+    def update(self):
+
+        if score >= 300:
+            self.image = self.healthbars[self.healthbar_count]
+            self.image = pygame.transform.scale(self.image, (300, 100))
+            self.image.set_colorkey(BLACK)
+            draw_text(screen, "BOSS HEALTH: ", 15, 1200, 130)
+
+            
 
 class Explosion(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -277,7 +341,7 @@ class Player(pygame.sprite.Sprite):
     def update(self):
 
         if score >= 500:
-            player.shoot_delay = 1000
+            player.shoot_delay = 000#1000
         
         self.image.set_colorkey(BLACK)
 
@@ -427,7 +491,7 @@ class Boss(pygame.sprite.Sprite):
         
     def update(self):
         
-        if score >= 500:
+        if score >= 600:
             
             self.image = self.running[self.running_count]
             self.image.set_colorkey(BLACK)
@@ -450,7 +514,52 @@ class Boss(pygame.sprite.Sprite):
     def getY(self):
         return self.rect.centery
 
+
+
+
+
+class Boss2(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.running = [pygame.image.load(os.path.join(img_folder, "alienGreen_walk1.png")).convert(),
+                        pygame.image.load(os.path.join(img_folder, "alienGreen_walk2.png")).convert()
+                        ]
+
+        self.running_count = 0
+        
+        self.image = self.running[self.running_count]
+
+        self.rect = self.image.get_rect()
+        self.rect.center = (WIDTH / 2, HEIGHT / 2)
+        self.rect.x = 1950
+        self.rect.y = 695
+
+
+        
+    def update(self):
+        
+        if score >= 300:
             
+            self.image = self.running[self.running_count]
+            self.image.set_colorkey(BLACK)
+            self.image = pygame.transform.scale(self.image, (175, 275))
+
+            self.running_count += 1
+            if self.running_count > 1:
+                self.running_count = 0 
+
+            self.rect.x += 2
+
+            if self.rect.left > WIDTH + 30:
+                self.rect.right = 0
+
+            self.mask = pygame.mask.from_surface(self.image)
+
+    def getX(self):
+        return self.rect.centerx
+
+    def getY(self):
+        return self.rect.centery
         
 
         
@@ -875,6 +984,7 @@ enemy_healthBar = Enemy_HealthBar()
 
 
 
+
 all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2, powerup2, meteor)
 
 def newMob():
@@ -925,6 +1035,10 @@ while running:
         if event.type == pygame.QUIT or keystate[pygame.K_q]:
             running = False
 
+        if keystate[pygame.K_g] and keystate[pygame.K_a] and keystate[pygame.K_b] and keystate[pygame.K_e]:
+            PLAYER_GRAV = 0.5
+            PLAYER_FRICTION = -0.0095 
+
     #CHECKS TO SEE IF LASER HITS MOB
     #BLUE ALIEN COLLISION
     hits = pygame.sprite.groupcollide(mobs, bullets, True, True, pygame.sprite.collide_mask)
@@ -952,11 +1066,9 @@ while running:
         explosion_sound.play()
 
     hit_mob = pygame.sprite.spritecollide(player, mobs, True, pygame.sprite.collide_mask)
-    #if hit_mob:
     for hit in hit_mob:
         explosion = Explosion(hit.getX(), hit.getY()) # x,y position of mob when it was hit
         all_sprites.add(explosion)
-        #mob.kill()
         newMob()
         explosion_sound = mixer.Sound("explosion.wav")
         explosion_sound.play()
@@ -1420,7 +1532,7 @@ while running:
         explosion_sound.play()
         explosion = Explosion(hit.getX(), hit.getY()) # x,y position of mob when it was hit
         all_sprites.add(explosion)
-        
+
         
 
 
@@ -1464,6 +1576,91 @@ while running:
         score += 20
         newMeteor()
 
+    #COMPLETE LEVEL
+    if score >= 2000:
+        show_newlevel_screen()
+        all_sprites = pygame.sprite.Group()
+        player = Player()
+        powerup2 = Powerup2()
+
+        powerups2 = pygame.sprite.Group()
+        powerups2.add(powerup2)
+
+        platform2 = Platform2()
+        platform = Platform()
+        platforms = pygame.sprite.Group()
+        platforms.add(platform, platform2)
+
+        rocket = Rocket()
+        obstacles = pygame.sprite.Group()
+        obstacles.add(rocket)
+
+        meteors = pygame.sprite.Group()
+
+        for i in range(8):
+            meteor = Meteor()
+            all_sprites.add(meteor)
+            meteors.add(meteor)
+
+        mob = Mob()
+
+        boss = Boss()
+        boss2 = Boss2()
+
+        alien_yellow = Yellow2()
+        aliens_yellow = pygame.sprite.Group()
+        aliens_yellow.add(alien_yellow)
+        all_sprites.add(alien_yellow)
+
+        alien_pink = Pink3()
+        aliens_pink = pygame.sprite.Group()
+        aliens_pink.add(alien_pink)
+        all_sprites.add(alien_pink)
+
+        enemyship = Enemyship()
+        enemyships = pygame.sprite.Group()
+        enemyships.add(enemyship)
+
+        mobs = pygame.sprite.Group()
+        mobs.add(mob)
+
+        bosses = pygame.sprite.Group()
+        bosses.add(boss)
+        
+        boss2 = Boss2()
+        bosses2 = pygame.sprite.Group()
+        bosses2.add(boss2)
+
+        bullet1 = Bulletright(self.rect.centerx, self.rect.centery)
+        bullet2 = Bulletleft(self.rect.centerx, self.rect.centery)
+        bullets = pygame.sprite.Group()
+        bullets.add(bullet1)
+        bullets.add(bullet2)
+
+        healthBar = HealthBar()
+        enemy_healthBar = Enemy_HealthBar()
+        enemy2_healthBar = Enemy2_HealthBar()
+
+        explosion = Explosion(10, 100)
+
+        all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2, powerup2, meteor, explosion, boss2, enemy2_healthBar)
+
+        score = 0
+
+        #COLLISION WITH LEVEL 2 BOSS
+        hits_bosses2 = pygame.sprite.groupcollide(bosses2, bullets, False, True, pygame.sprite.collide_mask)
+        for hit in hits_bosses2:
+            enemy2_healthBar.setHealth(-1)
+            if enemy2_healthBar.healthbar_count == 5:
+                boss2.kill()
+                score += 500
+                newPink()
+                newYellow()
+            explosion_sound = mixer.Sound("explosion.wav")
+            explosion_sound.play()
+            explosion = Explosion(hit.getX(), hit.getY()) # x,y position of mob when it was hit
+            all_sprites.add(explosion)
+
     # DRAW
     rel_x = bkgr_x % background.get_rect().width
     screen.blit(background, (rel_x - background.get_rect().width, 0))
@@ -1484,6 +1681,3 @@ while running:
     pygame.display.flip()
 
 pygame.quit()
-
-
-
