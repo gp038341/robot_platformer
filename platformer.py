@@ -341,7 +341,7 @@ class Player(pygame.sprite.Sprite):
     def update(self):
 
         if score >= 500:
-            player.shoot_delay = 000#1000
+            player.shoot_delay = 1000
         
         self.image.set_colorkey(BLACK)
 
@@ -868,6 +868,35 @@ class Enemyship(pygame.sprite.Sprite):
 
         self.mask = pygame.mask.from_surface(self.image)
 
+class Enemyship2(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load(os.path.join(img_folder, "sampleShip2.png")).convert()
+        self.image = pygame.transform.scale(self.image, (105, 75))
+        self.image.set_colorkey(BLACK)
+        self.rect = self.image.get_rect()
+        self.rect.center = (WIDTH / 2, HEIGHT / 2)
+        self.rect.x = random.randrange(1000, 1500)
+        self.rect.y = 900
+
+    def update(self):
+
+        self.rect.y += -10
+
+        if self.rect.bottom < 0:
+            self.rect.top = HEIGHT - 100
+            self.rect.x = random.randrange(200, 1300)
+            self.rect.y += -10
+
+    def getX(self):
+        return self.rect.centerx
+
+    def getY(self):
+        return self.rect.centery
+
+        self.mask = pygame.mask.from_surface(self.image)
+        
+
         
 class Bulletright(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -888,6 +917,12 @@ class Bulletright(pygame.sprite.Sprite):
             self.kill()
         self.mask = pygame.mask.from_surface(self.image)
         
+    def getX(self):
+        return self.rect.centerx
+
+    def getY(self):
+        return self.rect.centery
+        
 class Bulletleft(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
@@ -905,6 +940,12 @@ class Bulletleft(pygame.sprite.Sprite):
         if self.rect.right < 0:
             self.kill()
         self.mask = pygame.mask.from_surface(self.image)
+
+    def getX(self):
+        return self.rect.centerx
+
+    def getY(self):
+        return self.rect.centery
 
     
 #INITIALIZE VARIABLES
@@ -958,6 +999,7 @@ for i in range(5):
 mob = Mob()
 
 boss = Boss()
+boss2 = Boss2()
 
 alien_yellow = Yellow2()
 aliens_yellow = pygame.sprite.Group()
@@ -970,12 +1012,17 @@ aliens_pink.add(alien_pink)
 enemyship = Enemyship()
 enemyships = pygame.sprite.Group()
 enemyships.add(enemyship)
+enemyship2 = Enemyship2()
+enemyships.add(enemyship2)
 
 mobs = pygame.sprite.Group()
 mobs.add(mob)
 
 bosses = pygame.sprite.Group()
 bosses.add(boss)
+
+bosses2 = pygame.sprite.Group()
+bosses2.add(boss2)
 
 bullets = pygame.sprite.Group()
 
@@ -1631,36 +1678,98 @@ while running:
         bosses2 = pygame.sprite.Group()
         bosses2.add(boss2)
 
-        bullet1 = Bulletright(self.rect.centerx, self.rect.centery)
-        bullet2 = Bulletleft(self.rect.centerx, self.rect.centery)
-        bullets = pygame.sprite.Group()
-        bullets.add(bullet1)
-        bullets.add(bullet2)
-
         healthBar = HealthBar()
         enemy_healthBar = Enemy_HealthBar()
         enemy2_healthBar = Enemy2_HealthBar()
 
         explosion = Explosion(10, 100)
 
-        all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2, powerup2, meteor, explosion, boss2, enemy2_healthBar)
+        all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2, powerup2, meteor, explosion, boss2, enemy2_healthBar, enemyship2)
 
         score = 0
 
         #COLLISION WITH LEVEL 2 BOSS
-        hits_bosses2 = pygame.sprite.groupcollide(bosses2, bullets, False, True, pygame.sprite.collide_mask)
-        for hit in hits_bosses2:
-            enemy2_healthBar.setHealth(-1)
-            if enemy2_healthBar.healthbar_count == 5:
-                boss2.kill()
-                score += 500
-                newPink()
-                newYellow()
-            explosion_sound = mixer.Sound("explosion.wav")
-            explosion_sound.play()
-            explosion = Explosion(hit.getX(), hit.getY()) # x,y position of mob when it was hit
-            all_sprites.add(explosion)
+    hits_bosses2 = pygame.sprite.groupcollide(bosses2, bullets, False, True, pygame.sprite.collide_mask)
+    for hit in hits_bosses2:
+        enemy2_healthBar.setHealth(-1)
+        if enemy2_healthBar.healthbar_count == 5:
+            boss2.kill()
+            score += 500
+            newPink()
+            newYellow()
+        explosion_sound = mixer.Sound("explosion.wav")
+        explosion_sound.play()
+        explosion = Explosion(hit.getX(), hit.getY()) # x,y position of mob when it was hit
+        all_sprites.add(explosion)
 
+    hit_boss2 = pygame.sprite.spritecollide(player, bosses2, True, pygame.sprite.collide_mask)
+    if hit_boss2:
+        explosion_sound = mixer.Sound("explosion.wav")
+        explosion_sound.play()
+        explosion = Explosion(hit.getX(), hit.getY()) # x,y position of mob when it was hit
+        all_sprites.add(explosion)
+        player.kill()
+        if end:
+            start = False
+            mixer.music.stop()
+            show_end_screen()
+            all_sprites = pygame.sprite.Group()
+            player = Player()
+            powerup = Powerup()
+            powerup2 = Powerup2()
+
+            powerups = pygame.sprite.Group()
+            powerups.add(powerup)
+            powerups2 = pygame.sprite.Group()
+            powerups2.add(powerup2)
+
+            platform2 = Platform2()
+            platform = Platform()
+            platforms = pygame.sprite.Group()
+            platforms.add(platform, platform2)
+
+            rocket = Rocket()
+            obstacles = pygame.sprite.Group()
+            obstacles.add(rocket)
+
+            meteors = pygame.sprite.Group()
+
+            for i in range(5):
+                meteor = Meteor()
+                all_sprites.add(meteor)
+                meteors.add(meteor)
+
+            mob = Mob()
+
+            boss = Boss()
+
+            alien_yellow = Yellow2()
+            aliens_yellow = pygame.sprite.Group()
+            aliens_yellow.add(alien_yellow)
+
+            alien_pink = Pink3()
+            aliens_pink = pygame.sprite.Group()
+            aliens_pink.add(alien_pink)
+
+            enemyship = Enemyship()
+            enemyships = pygame.sprite.Group()
+            enemyships.add(enemyship)
+
+            mobs = pygame.sprite.Group()
+            mobs.add(mob)
+
+            bosses = pygame.sprite.Group()
+            bosses.add(boss)
+
+            bullets = pygame.sprite.Group()
+
+            healthBar = HealthBar()
+            enemy_healthBar = Enemy_HealthBar()
+
+            all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2, powerup2, meteor)
+
+            score = 0
+    
     # DRAW
     rel_x = bkgr_x % background.get_rect().width
     screen.blit(background, (rel_x - background.get_rect().width, 0))
