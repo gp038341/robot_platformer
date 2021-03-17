@@ -1624,7 +1624,7 @@ while running:
         newMeteor()
 
     #COMPLETE LEVEL
-    if score >= 100:
+    if score >= 1500:
         show_newlevel_screen()
         all_sprites = pygame.sprite.Group()
         player = Player()
