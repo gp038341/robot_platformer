@@ -3,7 +3,9 @@ import random
 import os
 import time
 from pygame import mixer
-                                   
+from os import path
+
+HS_FILE = "highscore.txt"                                   
 WIDTH = 1950
 HEIGHT = 1000
 FPS = 30
@@ -11,6 +13,17 @@ GROUND = HEIGHT - 30
 SLOW = 3
 FAST = 8
 score = 0
+
+# load high score
+dir = path.dirname(__file__)
+with open(path.join(dir, HS_FILE), "rt") as f:
+    try:
+        highscore = int(f.read())
+    except:
+        highscore = 0
+
+
+#load_data()
 
 #CONSTANTS - PHYSICS
 PLAYER_ACC = 1.5
@@ -31,7 +44,7 @@ game_folder = os.path.dirname(__file__)
 img_folder = os.path.join(game_folder, "img")
 
 
-
+        
 #DRAW TEXT
 font_name = pygame.font.match_font("georgia")
 def draw_text(screen, text, size, x, y):
@@ -48,7 +61,10 @@ def show_start_screen():
     draw_text(screen, "ROBOTS VS ALIENS", 64, WIDTH / 2 - 200, HEIGHT / 4)
     draw_text(screen, "Arrow keys to move, space to shoot", 22, WIDTH / 2 - 200, HEIGHT / 2)
     draw_text(screen, "press 'q' to quit", 22, WIDTH / 2 - 200, HEIGHT / 1.6)
+    draw_text(screen, "change music by pressing 1, 2, or 3,", 18, WIDTH / 2 - 200, 700)
     draw_text(screen, "Press a key to begin...", 18, WIDTH / 2 - 200, HEIGHT * 3 / 4)
+    draw_text(screen, "High Score: ", 22, WIDTH / 2, 15)
+    draw_text(screen, str(highscore), 22, WIDTH / 2 + 200, 15)
     pygame.display.flip()
     waiting = True
     while waiting:
@@ -62,11 +78,24 @@ def show_start_screen():
 
 
 def show_end_screen():
+    #dir = path.dirname(__file__)
+    #with open(path.join(dir, HS_FILE), "w") as f:
+     #   try:
+      #      highscore = int(f.read())
+      #  except:
+        #    highscore = 0   
     screen.blit(background, background_rect)
     draw_text(screen, "GAME OVER", 64, WIDTH / 2 - 200, HEIGHT / 4)
     draw_text(screen, "Press ENTER to try again", 22, WIDTH / 2 - 200, HEIGHT / 2 + 200)
     draw_text(screen, str(score), 35, 1050, 500)
     draw_text(screen, "FINAL SCORE: ", 35, 750, 500)
+    if score >= highscore:
+        highscore = score
+        draw_text("NEW HIGH SCORE!", 22, WIDTH / 2, HEIGHT / 2 + 40)
+        with open(path.join(dir, HS_FILE), "w") as f:
+            f.write(str(score))
+    else:
+        self.draw_text("High Score: " + str(highscore), 22, WIDTH / 2, HEIGHT / 2 + 40)
     pygame.display.flip()
     waiting = True
     while waiting:
@@ -95,7 +124,17 @@ def show_newlevel_screen():
             if keystate[pygame.K_RETURN]:
                 waiting = False
 
-
+def show_win_screen():
+    screen.blit(background, background_rect)
+    draw_text(screen, "YOU WIN", 64, WIDTH / 2 - 200, HEIGHT / 4)
+    draw_text(screen, "You defeated all of the aliens!", 22, WIDTH / 2 - 200, HEIGHT / 2)
+    draw_text(screen, "press 'q' to quit", 22, WIDTH / 2 - 200, HEIGHT / 1.6)
+    #draw_text(screen, "Robot, spaceship, alien, and meteor sprites done by ")
+    pygame.display.flip()
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT or keystate[pygame.K_q]:
+            pygame.quit()
+                
 class HealthBar(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
@@ -1013,7 +1052,8 @@ enemyship = Enemyship()
 enemyships = pygame.sprite.Group()
 enemyships.add(enemyship)
 enemyship2 = Enemyship2()
-enemyships.add(enemyship2)
+enemyships2 = pygame.sprite.Group()
+enemyships2.add(enemyship2)
 
 mobs = pygame.sprite.Group()
 mobs.add(mob)
@@ -1065,6 +1105,9 @@ end = True
 running = True
 while running:
 
+    #BACKGROUND MUSIC
+
+
     #SHOW START SCREEN ONCE
     if start:
         mixer.music.stop()
@@ -1072,6 +1115,8 @@ while running:
         start = False
         mixer.music.play(loops= -1)
 
+    if score >= 1700:
+        show_win_screen()
     
 
     clock.tick(FPS)
@@ -1084,7 +1129,20 @@ while running:
 
         if keystate[pygame.K_g] and keystate[pygame.K_a] and keystate[pygame.K_b] and keystate[pygame.K_e]:
             PLAYER_GRAV = 0.5
-            PLAYER_FRICTION = -0.0095 
+            PLAYER_FRICTION = -0.0095
+
+        if keystate[pygame.K_1]:
+            mixer.music.load("Spacecrusher.ogg")
+            mixer.music.play()
+            mixer.music.play(loops= -1)
+        elif keystate[pygame.K_2]:
+            mixer.music.load("Fun Background.mp3")
+            mixer.music.play()
+            mixer.music.play(loops= -1)
+
+        elif keystate[pygame.K_3]:
+            mixer.music.stop()
+            
 
     #CHECKS TO SEE IF LASER HITS MOB
     #BLUE ALIEN COLLISION
@@ -1625,6 +1683,7 @@ while running:
 
     #COMPLETE LEVEL
     if score >= 1500:
+        score = 0
         show_newlevel_screen()
         all_sprites = pygame.sprite.Group()
         player = Player()
@@ -1667,8 +1726,9 @@ while running:
         enemyship = Enemyship()
         enemyships = pygame.sprite.Group()
         enemyships.add(enemyship)
+        enemyships2 = pygame.sprite.Group()
         enemyship2 = Enemyship2()
-        enemyships.add(enemyship2)
+        enemyships2.add(enemyship2)
 
         mobs = pygame.sprite.Group()
         mobs.add(mob)
@@ -1688,7 +1748,6 @@ while running:
 
         all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, rocket, healthBar, boss, enemy_healthBar, platform2, powerup2, meteor, explosion, boss2, enemy2_healthBar, enemyship2)
 
-        score = 0
 
     #COLLISION WITH LEVEL 2 BOSS
     hits_bosses2 = pygame.sprite.groupcollide(bosses2, bullets, False, True, pygame.sprite.collide_mask)
@@ -1772,7 +1831,7 @@ while running:
 
             score = 0
 
-    hit_enemyship2 = pygame.sprite.spritecollide(player, enemyships, True, pygame.sprite.collide_mask)
+    hit_enemyship2 = pygame.sprite.spritecollide(player, enemyships2, True, pygame.sprite.collide_mask)
     if hit_enemyship2:
         explosion_sound = mixer.Sound("explosion.wav")
         explosion_sound.play()
