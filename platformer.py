@@ -13,17 +13,18 @@ GROUND = HEIGHT - 30
 SLOW = 3
 FAST = 8
 score = 0
+highscore = -99
 
 # load high score
-dir = path.dirname(__file__)
-with open(path.join(dir, HS_FILE), "rt") as f:
-    try:
-        highscore = int(f.read())
-    except:
-        highscore = 0
+try:
+    file = open(HS_FILE, encoding="utf-8")
+    contents = file.readlines()
+finally:
+    file.close()
+highscore = int(contents[0])
+print(highscore)
 
 
-#load_data()
 
 #CONSTANTS - PHYSICS
 PLAYER_ACC = 1.5
@@ -78,24 +79,34 @@ def show_start_screen():
 
 
 def show_end_screen():
-    #dir = path.dirname(__file__)
-    #with open(path.join(dir, HS_FILE), "w") as f:
-     #   try:
-      #      highscore = int(f.read())
-      #  except:
-        #    highscore = 0   
+    if score > highscore:
+        try:
+            file = open(HS_FILE, "w", encoding="utf-8")
+            file.write(str(score))
+        finally:
+            file.close()
+
+        
+
+    else:
+        draw_text(screen, "High Score: ", 22, WIDTH / 2, 15)
+        draw_text(screen, str(highscore), 22, WIDTH / 2 + 200, 15)
+
+
+    
     screen.blit(background, background_rect)
     draw_text(screen, "GAME OVER", 64, WIDTH / 2 - 200, HEIGHT / 4)
     draw_text(screen, "Press ENTER to try again", 22, WIDTH / 2 - 200, HEIGHT / 2 + 200)
     draw_text(screen, str(score), 35, 1050, 500)
     draw_text(screen, "FINAL SCORE: ", 35, 750, 500)
-    if score >= highscore:
-        highscore = score
-        draw_text("NEW HIGH SCORE!", 22, WIDTH / 2, HEIGHT / 2 + 40)
-        with open(path.join(dir, HS_FILE), "w") as f:
-            f.write(str(score))
+    if score > highscore:
+        draw_text(screen, "NEW HIGH SCORE!", 38, WIDTH / 2 - 220, HEIGHT / 4 + 150)
     else:
-        self.draw_text("High Score: " + str(highscore), 22, WIDTH / 2, HEIGHT / 2 + 40)
+        draw_text(screen, "High Score: ", 22, 800, 15)
+        draw_text(screen, str(highscore), 22, 950, 15)
+
+
+
     pygame.display.flip()
     waiting = True
     while waiting:
