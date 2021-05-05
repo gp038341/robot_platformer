@@ -14,6 +14,7 @@ SLOW = 3
 FAST = 8
 score = 0
 highscore = -99
+rounds = 0
 
 # load high score
 try:
@@ -60,11 +61,11 @@ def draw_text(screen, text, size, x, y):
 def show_start_screen():
     screen.blit(background, background_rect)
     draw_text(screen, "ROBOTS VS ALIENS", 64, WIDTH / 2 - 200, HEIGHT / 4)
-    draw_text(screen, "Arrow keys to move, space to shoot", 22, WIDTH / 2 - 200, HEIGHT / 2)
-    draw_text(screen, "press 'q' to quit", 22, WIDTH / 2 - 200, HEIGHT / 1.6)
-    draw_text(screen, "change music by pressing 1, 2, or 3,", 18, WIDTH / 2 - 200, 700)
-    draw_text(screen, "Press a key to begin...", 18, WIDTH / 2 - 200, HEIGHT * 3 / 4)
-    draw_text(screen, "High Score: ", 22, WIDTH / 2, 15)
+    draw_text(screen, "Arrow keys to move, space to shoot", 22, WIDTH / 2 - 100, HEIGHT / 2)
+    draw_text(screen, "press 'q' to quit", 22, WIDTH / 2 - 20, HEIGHT / 1.6)
+    draw_text(screen, "change music by pressing 1, 2, or 3,", 18, WIDTH / 2 - 65, 700)
+    draw_text(screen, "Press a key to begin...", 18, WIDTH / 2 - 20, HEIGHT * 3 / 4)
+    draw_text(screen, "High Score: ", 22, WIDTH / 2 - 100, 15)
     draw_text(screen, str(highscore), 22, WIDTH / 2 + 200, 15)
     pygame.display.flip()
     waiting = True
@@ -96,9 +97,9 @@ def show_end_screen():
     
     screen.blit(background, background_rect)
     draw_text(screen, "GAME OVER", 64, WIDTH / 2 - 200, HEIGHT / 4)
-    draw_text(screen, "Press ENTER to try again", 22, WIDTH / 2 - 200, HEIGHT / 2 + 200)
+    draw_text(screen, "Press ENTER to try again", 22, WIDTH / 2 - 175, HEIGHT / 2 + 200)
     draw_text(screen, str(score), 35, 1050, 500)
-    draw_text(screen, "FINAL SCORE: ", 35, 750, 500)
+    draw_text(screen, "FINAL SCORE: ", 35, 800, 500)
     if score > highscore:
         draw_text(screen, "NEW HIGH SCORE!", 38, WIDTH / 2 - 220, HEIGHT / 4 + 150)
     else:
@@ -137,15 +138,43 @@ def show_newlevel_screen():
 
 def show_win_screen():
     screen.blit(background, background_rect)
-    draw_text(screen, "YOU WIN", 64, WIDTH / 2 - 200, HEIGHT / 4)
-    draw_text(screen, "You defeated all of the aliens!", 22, WIDTH / 2 - 200, HEIGHT / 2)
-    draw_text(screen, "press 'q' to quit", 22, WIDTH / 2 - 200, HEIGHT / 1.6)
-    #draw_text(screen, "Robot, spaceship, alien, and meteor sprites done by ")
+    draw_text(screen, "YOU WIN!!!", 64, WIDTH / 2 - 200, HEIGHT / 4)
+    draw_text(screen, "You defeated all of the aliens!", 22, WIDTH / 2 - 200, HEIGHT / 2 - 100)
+    draw_text(screen, "Robot, spaceship, alien, and meteor sprites done by Kenney.nl or www.kenney.nl", 22, WIDTH / 2 - 200, HEIGHT / 2)
+    draw_text(screen, "Background done by opengameart.org/users/joshshshsh", 22, WIDTH / 2 - 200, HEIGHT / 2 + 100)
+    draw_text(screen, "Song 1 done by opengameart.org/users/yd, song 2 done by opengameart.org/users/nia-mi", 22, WIDTH / 2 - 200, HEIGHT / 2 + 200)
+    draw_text(screen, "Game developed by Gabe Pelkey", 22, WIDTH / 2 - 200, HEIGHT / 2 + 300)
+    draw_text(screen, "press 'q' to quit", 22, WIDTH / 2 - 200, 900)
     pygame.display.flip()
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT or keystate[pygame.K_q]:
-            pygame.quit()
-                
+    waiting = True
+    while waiting:
+        keystate = pygame.key.get_pressed()
+        clock.tick(FPS)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT or keystate[pygame.K_q]:
+                pygame.quit()
+
+#SHOW INFINITE SCREEN FUNCTION
+def show_inifinite_screen():
+    screen.blit(background, background_rect)
+    draw_text(screen, "ROBOTS VS ALIENS", 64, WIDTH / 2 - 200, HEIGHT / 4)
+    draw_text(screen, "You have unlocked infinite mode!", 22, WIDTH / 2 - 200, HEIGHT / 2)
+    draw_text(screen, "press 'q' to quit", 22, WIDTH / 2 - 200, HEIGHT / 1.6)
+    draw_text(screen, "change music by pressing 1, 2, or 3,", 18, WIDTH / 2 - 200, 700)
+    draw_text(screen, "Press the enter key to begin...", 18, WIDTH / 2 - 200, HEIGHT * 3 / 4)
+    draw_text(screen, "High Score: ", 22, WIDTH / 2, 15)
+    draw_text(screen, str(highscore), 22, WIDTH / 2 + 200, 15)
+    pygame.display.flip()
+    waiting = True
+    while waiting:
+        keystate = pygame.key.get_pressed()
+        clock.tick(FPS)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT or keystate[pygame.K_q]:
+                pygame.quit()
+            if keystate[pygame.K_RETURN]:
+                waiting = False
+                    
 class HealthBar(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
@@ -391,7 +420,7 @@ class Player(pygame.sprite.Sprite):
     def update(self):
 
         if score >= 500:
-            player.shoot_delay = 1000
+            player.shoot_delay = 1000 
         
         self.image.set_colorkey(BLACK)
 
@@ -1126,8 +1155,7 @@ while running:
         start = False
         mixer.music.play(loops= -1)
 
-    if score >= 1700:
-        show_win_screen()
+    
     
 
     clock.tick(FPS)
@@ -1693,7 +1721,8 @@ while running:
         newMeteor()
 
     #COMPLETE LEVEL
-    if score >= 1500:
+    if score >= 1500 and rounds < 1:
+        rounds += 1
         score = 0
         show_newlevel_screen()
         all_sprites = pygame.sprite.Group()
@@ -1758,6 +1787,74 @@ while running:
         explosion = Explosion(10, 100)
 
         all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, rocket, healthBar, boss, enemy_healthBar, platform2, powerup2, meteor, explosion, boss2, enemy2_healthBar, enemyship2)
+
+    if keystate[pygame.K_8]:
+        show_inifinite_screen()
+        score = 0
+        rounds = 1.5
+        all_sprites = pygame.sprite.Group()
+        player = Player()
+        powerup2 = Powerup2()
+
+        powerups2 = pygame.sprite.Group()
+        powerups2.add(powerup2)
+
+        platform2 = Platform2()
+        platform = Platform()
+        platforms = pygame.sprite.Group()
+        platforms.add(platform, platform2)
+
+        rocket = Rocket()
+        obstacles = pygame.sprite.Group()
+        obstacles.add(rocket)
+
+        meteors = pygame.sprite.Group()
+
+        for i in range(8):
+            meteor = Meteor()
+            all_sprites.add(meteor)
+            meteors.add(meteor)
+
+        mob = Mob()
+
+        boss = Boss()
+        boss2 = Boss2()
+
+        alien_yellow = Yellow2()
+        aliens_yellow = pygame.sprite.Group()
+        aliens_yellow.add(alien_yellow)
+        all_sprites.add(alien_yellow)
+
+        alien_pink = Pink3()
+        aliens_pink = pygame.sprite.Group()
+        aliens_pink.add(alien_pink)
+        all_sprites.add(alien_pink)
+
+        enemyship = Enemyship()
+        enemyships = pygame.sprite.Group()
+        enemyships.add(enemyship)
+        enemyships2 = pygame.sprite.Group()
+        enemyship2 = Enemyship2()
+        enemyships2.add(enemyship2)
+
+        mobs = pygame.sprite.Group()
+        mobs.add(mob)
+
+        bosses = pygame.sprite.Group()
+        bosses.add(boss)
+        
+        boss2 = Boss2()
+        bosses2 = pygame.sprite.Group()
+        bosses2.add(boss2)
+
+        healthBar = HealthBar()
+        enemy_healthBar = Enemy_HealthBar()
+        enemy2_healthBar = Enemy2_HealthBar()
+
+        explosion = Explosion(10, 100)
+
+        all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, rocket, healthBar, boss, enemy_healthBar, platform2, powerup2, meteor, explosion, boss2, enemy2_healthBar, enemyship2)
+
 
 
     #COLLISION WITH LEVEL 2 BOSS
@@ -1909,7 +2006,12 @@ while running:
             all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2, powerup2, meteor)
 
             score = 0
+
+    if score >= 1700 and rounds == 1:
+        show_win_screen()
+
     
+    #Work on infinte mode
     
     # DRAW
     rel_x = bkgr_x % background.get_rect().width
