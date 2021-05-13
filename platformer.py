@@ -60,13 +60,14 @@ def draw_text(screen, text, size, x, y):
 #SHOW START SCREEN FUNCTION
 def show_start_screen():
     screen.blit(background, background_rect)
-    draw_text(screen, "ROBOTS VS ALIENS", 64, WIDTH / 2 - 200, HEIGHT / 4)
-    draw_text(screen, "Arrow keys to move, space to shoot", 22, WIDTH / 2 - 100, HEIGHT / 2)
-    draw_text(screen, "press 'q' to quit", 22, WIDTH / 2 - 20, HEIGHT / 1.6)
-    draw_text(screen, "change music by pressing 1, 2, or 3,", 18, WIDTH / 2 - 65, 700)
-    draw_text(screen, "Press a key to begin...", 18, WIDTH / 2 - 20, HEIGHT * 3 / 4)
-    draw_text(screen, "High Score: ", 22, WIDTH / 2 - 100, 15)
-    draw_text(screen, str(highscore), 22, WIDTH / 2 + 200, 15)
+    draw_text(screen, "ROBOTS VS ALIENS", 64, WIDTH / 2 - 300, HEIGHT / 4)
+    draw_text(screen, "Arrow keys to move, space to shoot", 22, WIDTH / 2 - 200, HEIGHT / 2)
+    draw_text(screen, "press 'q' to quit", 22, WIDTH / 2 - 100, HEIGHT / 1.6)
+    draw_text(screen, "change music by pressing 1, 2, or 3,", 18, WIDTH / 2 - 165, 700)
+    draw_text(screen, "Taunt by pressing 't'. Enter infinite mode by pressing '8'", 18, WIDTH / 2 - 225, 800)
+    draw_text(screen, "Press a key to begin...", 18, WIDTH / 2 - 100, HEIGHT * 3 / 4)
+    draw_text(screen, "High Score: ", 22, WIDTH / 2 - 200, 15)
+    draw_text(screen, str(highscore), 22, WIDTH / 2 + 100, 15)
     pygame.display.flip()
     waiting = True
     while waiting:
@@ -352,7 +353,36 @@ class Explosion(pygame.sprite.Sprite):
             self.kill()
 
 
-                
+class Catchphrase(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
+
+        self.image = pygame.image.load(os.path.join(img_folder, "Catchphrase.png")).convert()
+                        
+
+        self.image = pygame.transform.scale(self.image, (100, 75))
+        self.image.set_colorkey(BLACK)
+
+        self.rect = self.image.get_rect()
+        self.rect.center = (WIDTH / 2, HEIGHT / 2)
+        self.rect.centerx = x
+        self.rect.centery = y
+        self.last_update = pygame.time.get_ticks()
+        
+
+
+    def update(self):
+        self.image = pygame.transform.scale(self.image, (75, 100))
+        self.image.set_colorkey(BLACK)
+        catchphrase = Catchphrase(player.getX(), player.getY())
+        now = pygame.time.get_ticks()
+        if now - self.last_update > 500:
+            self.last_update = now
+            self.kill()
+        
+
+
+             
 
 
 class Player(pygame.sprite.Sprite):
@@ -549,6 +579,15 @@ class Player(pygame.sprite.Sprite):
             else:
                 self.pos.y = hits[0].rect.top + 1 #jumping from above
                 self.vel.y = 0
+
+    
+    def getX(self):
+        return self.rect.centerx + 50
+
+    def getY(self):
+        return self.rect.centery - 50
+
+
 
 class Boss(pygame.sprite.Sprite):
     def __init__(self):
@@ -1181,6 +1220,14 @@ while running:
 
         elif keystate[pygame.K_3]:
             mixer.music.stop()
+
+        
+        if keystate[pygame.K_t]:
+            catchphrase = Catchphrase(player.getX(), player.getY()) # x,y position of mob when it was hit
+            all_sprites.add(catchphrase)
+            
+      
+            
             
 
     #CHECKS TO SEE IF LASER HITS MOB
@@ -1201,6 +1248,8 @@ while running:
         explosion_sound.play()
         explosion = Explosion(hit.getX(), hit.getY()) # x,y position of mob when it was hit
         all_sprites.add(explosion)
+        catchphrase = Catchphrase(player.getX(), player.getY() - 10)
+        all_sprites.add(catchphrase)
         score += 30
         newMob()
 
@@ -1657,8 +1706,9 @@ while running:
             enemy_healthBar = Enemy_HealthBar()
 
             explosion = Explosion(10, 100)
+            catchphrase = Catchphrase(10, 100)
 
-            all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2, powerup2, meteor, explosion)
+            all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2, powerup2, meteor, explosion, catchphrase)
 
             score = 0
 
@@ -1669,6 +1719,8 @@ while running:
         enemy_healthBar.setHealth(-1)
         if enemy_healthBar.healthbar_count == 5:
             boss.kill()
+            catchphrase = Catchphrase(player.getX(), player.getY())
+            all_sprites.add(catchphrase)
             score += 500
             newPink()
             newYellow()
@@ -1864,6 +1916,7 @@ while running:
         if enemy2_healthBar.healthbar_count == 5:
             boss2.kill()
             score += 500
+            Catchphrase()
             newPink()
             newYellow()
         explosion_sound = mixer.Sound("explosion.wav")
