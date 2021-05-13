@@ -156,7 +156,7 @@ def show_win_screen():
                 pygame.quit()
 
 #SHOW INFINITE SCREEN FUNCTION
-def show_inifinite_screen():
+def show_infinite_screen():
     screen.blit(background, background_rect)
     draw_text(screen, "ROBOTS VS ALIENS", 64, WIDTH / 2 - 200, HEIGHT / 4)
     draw_text(screen, "You have unlocked infinite mode!", 22, WIDTH / 2 - 200, HEIGHT / 2)
@@ -175,6 +175,24 @@ def show_inifinite_screen():
                 pygame.quit()
             if keystate[pygame.K_RETURN]:
                 waiting = False
+
+#SHOW PAUSE SCREEN FUNCTION
+def show_pause_screen():
+    screen.blit(background, background_rect)
+    draw_text(screen, "GAME PAUSED", 64, WIDTH / 2 - 200, HEIGHT / 4)
+    draw_text(screen, "press 'Enter' to resume game", 22, WIDTH / 2 - 200, HEIGHT / 1.6)
+    draw_text(screen, "change music by pressing 1, 2, or 3,", 18, WIDTH / 2 - 200, 700)
+    pygame.display.flip()
+    waiting = True
+    while waiting:
+        keystate = pygame.key.get_pressed()
+        clock.tick(FPS)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT or keystate[pygame.K_q]:
+                pygame.quit()
+            if keystate[pygame.K_RETURN]:
+                waiting = False
+
                     
 class HealthBar(pygame.sprite.Sprite):
     def __init__(self):
@@ -1223,7 +1241,7 @@ while running:
 
         
         if keystate[pygame.K_t]:
-            catchphrase = Catchphrase(player.getX(), player.getY()) # x,y position of mob when it was hit
+            catchphrase = Catchphrase(player.getX(), player.getY()) # x,y position of the player
             all_sprites.add(catchphrase)
             
       
@@ -1840,8 +1858,13 @@ while running:
 
         all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, rocket, healthBar, boss, enemy_healthBar, platform2, powerup2, meteor, explosion, boss2, enemy2_healthBar, enemyship2)
 
+
+    #PAUSE SCREEN
+    if keystate[pygame.K_p]:
+        show_pause_screen()
+    #START FOR INFINITE MODE
     if keystate[pygame.K_8]:
-        show_inifinite_screen()
+        show_infinite_screen()
         score = 0
         rounds = 1.5
         all_sprites = pygame.sprite.Group()
@@ -1916,7 +1939,6 @@ while running:
         if enemy2_healthBar.healthbar_count == 5:
             boss2.kill()
             score += 500
-            Catchphrase()
             newPink()
             newYellow()
         explosion_sound = mixer.Sound("explosion.wav")
@@ -1925,7 +1947,7 @@ while running:
         all_sprites.add(explosion)
 
     hit_boss2 = pygame.sprite.spritecollide(player, bosses2, True, pygame.sprite.collide_mask)
-    if hit_boss2:
+    for hit in hit_boss2:
         explosion_sound = mixer.Sound("explosion.wav")
         explosion_sound.play()
         explosion = Explosion(hit.getX(), hit.getY()) # x,y position of mob when it was hit
@@ -1993,7 +2015,7 @@ while running:
             score = 0
 
     hit_enemyship2 = pygame.sprite.spritecollide(player, enemyships2, True, pygame.sprite.collide_mask)
-    if hit_enemyship2:
+    for hit in hit_enemyship2:
         explosion_sound = mixer.Sound("explosion.wav")
         explosion_sound.play()
         explosion = Explosion(hit.getX(), hit.getY()) # x,y position of mob when it was hit
@@ -2059,6 +2081,7 @@ while running:
             all_sprites.add(player, platform, mob, enemyship, alien_yellow, alien_pink, powerup, rocket, healthBar, boss, enemy_healthBar, platform2, powerup2, meteor)
 
             score = 0
+             
 
     if score >= 1700 and rounds == 1:
         show_win_screen()
