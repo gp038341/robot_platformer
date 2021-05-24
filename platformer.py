@@ -102,7 +102,7 @@ def show_end_screen():
     draw_text(screen, str(score), 35, 1050, 500)
     draw_text(screen, "FINAL SCORE: ", 35, 800, 500)
     if score > highscore:
-        draw_text(screen, "NEW HIGH SCORE!", 38, WIDTH / 2 - 220, HEIGHT / 4 + 150)
+        draw_text(screen, "NEW HIGH SCORE!", 38, WIDTH / 2 - 195, HEIGHT / 4 + 150)
     else:
         draw_text(screen, "High Score: ", 22, 800, 15)
         draw_text(screen, str(highscore), 22, 950, 15)
